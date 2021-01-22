@@ -9,7 +9,10 @@
   },
   "scripts": {
     "start": "snowpack dev",
-    "build": "snowpack build && ./ar_bundle.py && pio run",
+    "build": "npm run web-build && npm run ar-build",
+    "web-build": "snowpack build && ./ar_bundle.py",
+    "ar-build": "pio run",
+    "upload": "pio run --target upload",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
