@@ -1,4 +1,6 @@
 #include <static_web_files.hpp>
+#include <WiFiManager.h>
+#include <FastLED.h>
 
 void setup() {
   // put your setup code here, to run once:

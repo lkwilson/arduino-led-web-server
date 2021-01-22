@@ -1,0 +1,9 @@
+* {
+  font: 1em sans-serif;
+}
+
+div#root {
+  color: black;
+  margin: 1rem;
+  font-size: xx-large;
+}
