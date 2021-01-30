@@ -4,4 +4,4 @@
 .vscode/launch.json
 .vscode/ipch
 node_modules/
-build/
+data/

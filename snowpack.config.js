@@ -3,9 +3,8 @@ module.exports = {
     public: '/',
     ui: '/dist',
   },
-  plugins: [
-    [
-      '@snowpack/plugin-webpack',
-    ],
-  ],
+  buildOptions: {
+    out: 'data',
+    clean: true,
+  },
 };
