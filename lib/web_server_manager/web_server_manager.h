@@ -1,4 +1,5 @@
 #include <ESPAsyncWebServer.h>
+#include <LittleFS.h>
 
 struct WebServerManager {
   public: // ctors
@@ -6,10 +7,10 @@ struct WebServerManager {
 
   public: // api
     void setup() {
-      if (!SPIFFS.begin()) {
-        Serial.println("Unable to mount SPIFFS directory");
+      if (!LittleFS.begin()) {
+        Serial.println("Unable to mount LittleFS directory");
       }
-      m_server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+      m_server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
       m_server.onNotFound([this](AsyncWebServerRequest *request){ this->on_not_found(request); });
 
       m_server.begin();
