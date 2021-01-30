@@ -8,12 +8,14 @@
     "test": "test"
   },
   "scripts": {
+    "postinstall": "pio lib install",
     "start": "snowpack dev",
     "build": "npm run web-build && npm run ar-build",
     "web-build": "snowpack build",
     "ar-build": "pio run",
     "upload": "pio run -t uploadfs && pio run -t upload",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "pio run -t clean && rm -rf data/",
+    "test": "pio test"
   },
   "repository": {
     "type": "git",
