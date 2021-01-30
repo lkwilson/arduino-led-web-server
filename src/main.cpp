@@ -3,10 +3,12 @@
 #include <led_manager.h>
 
 constexpr auto SERIAL_BAUD_RATE = 115200;
+constexpr auto LED_DATA_PIN = 6;
+constexpr auto LED_NUM_LIGHTS = 10;
 
 WiFiManager s_wifi_manager;
 WebServerManager s_web_server_manager;
-LedManager s_led_manager;
+LedManager<LED_DATA_PIN, LED_NUM_LIGHTS> s_led_manager;
 
 void setup() {
   // Setup Serial
@@ -23,4 +25,6 @@ void setup() {
   s_web_server_manager.setup(s_led_manager);
 }
 
-void loop() {}
+void loop() {
+  s_led_manager.loop();
+}
