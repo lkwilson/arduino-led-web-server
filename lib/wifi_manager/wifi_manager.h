@@ -3,6 +3,7 @@
 #include <ESP8266WiFi.h>
 
 struct WiFiManager {
+  public: // api
     void setup() {
       Serial.println("Connecting to WiFi");
       configure();
@@ -14,6 +15,7 @@ struct WiFiManager {
       Serial.println(WiFi.localIP());
     }
 
+  private: // helper methods
     void wait_for_connection() {
       while (true) {
         const auto results = WiFi.waitForConnectResult(10000UL);
@@ -80,7 +82,6 @@ struct WiFiManager {
       }
     }
 
-  private:
     void configure() {
       WiFi.setAutoConnect(true);
       WiFi.setAutoReconnect(true);
