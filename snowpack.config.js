@@ -1,7 +1,7 @@
 module.exports = {
   mount: {
-    public: '/',
-    ui: '/dist',
+    "ui/public/": '/',
+    "ui/src/": '/dist',
   },
   buildOptions: {
     out: 'data',
