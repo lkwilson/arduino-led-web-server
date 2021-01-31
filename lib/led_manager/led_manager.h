@@ -141,7 +141,6 @@ struct LedManager {
 
   public: // api
     void setup() {
-      m_fade_manager.clear();
       Serial.printf("LED manager loading with %d leds and data pin %d\n", NUM_LEDS, DATA_PIN);
       FastLED.addLeds<NEOPIXEL, DATA_PIN>(m_leds, NUM_LEDS);
     }
@@ -152,7 +151,6 @@ struct LedManager {
       fade_all_to(0, 10, 0, 500);
       fade_all_to(0, 0, 10, 500);
       fade_all_to(0, 0, 0, 500);
-      delay(1000);
     }
 
   public: // web api
@@ -163,8 +161,13 @@ struct LedManager {
   private: // helper methods
     void fade_all_to(const uint8_t r, const uint8_t g, const uint8_t b, unsigned long duration) {
       const auto start_time = millis();
+      Serial.printf("Starting fade: %d %d %d %d\n", r, g, b, duration);
       m_fade_manager.set(start_time, duration, r, g, b);
-      while (m_fade_manager.update(millis()));
+      while (m_fade_manager.update(millis()))
+      {
+        FastLED.show();
+        yield();
+      }
     }
 
   private: // members
