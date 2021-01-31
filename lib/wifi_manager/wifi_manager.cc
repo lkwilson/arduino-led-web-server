@@ -7,6 +7,8 @@ void WiFiManager::setup() const {
   if (results != WL_CONNECTED) {
     wait_for_connection();
   }
+  Serial.print("Connected to ");
+  Serial.println(WiFi.SSID());
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
 }
