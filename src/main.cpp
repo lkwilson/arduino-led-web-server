@@ -14,6 +14,7 @@ void setup() {
   // Setup Serial
   Serial.begin(SERIAL_BAUD_RATE);
   Serial.println();
+  randomSeed(analogRead(0));
 
   // Setup WiFi
   s_wifi_manager.setup();

@@ -11,7 +11,7 @@ struct Fader {
   public: // api
     void set(
         const millis_t start_time,
-        unsigned long duration,
+        const millis_t duration,
         const CRGB& current_color,
         const uint8_t r,
         const uint8_t g,
@@ -44,9 +44,13 @@ struct Fader {
       if (passed_time < m_duration) {
         const auto progress = static_cast<double>(passed_time) / m_duration;
         const auto transformed_progress = transform_progress(progress);
-        led.r = m_base_color.r + static_cast<int>(transformed_progress * m_r_offset);
-        led.g = m_base_color.g + static_cast<int>(transformed_progress * m_g_offset);
-        led.b = m_base_color.b + static_cast<int>(transformed_progress * m_b_offset);
+        const auto r = m_base_color.r + static_cast<int>(transformed_progress * m_r_offset);
+        const auto g = m_base_color.g + static_cast<int>(transformed_progress * m_g_offset);
+        const auto b = m_base_color.b + static_cast<int>(transformed_progress * m_b_offset);
+        Serial.printf("Updating to %d %d %d\n", r, g, b);
+        led.r = r;
+        led.g = g;
+        led.b = b;
       } else {
         m_active = false;
         led = m_target_color;
@@ -87,7 +91,7 @@ struct FadeManager {
     void set(
         const size_t i,
         const millis_t start_time,
-        unsigned long duration,
+        const millis_t duration,
         const uint8_t r,
         const uint8_t g,
         const uint8_t b) {
@@ -96,7 +100,7 @@ struct FadeManager {
 
     void set(
         const millis_t start_time,
-        unsigned long duration,
+        const millis_t duration,
         const uint8_t r,
         const uint8_t g,
         const uint8_t b) {
@@ -116,7 +120,11 @@ struct FadeManager {
     }
 
     bool update(const size_t i, const millis_t current_time) {
-      return m_faders[i].update(current_time, m_leds[i]);
+      if (m_faders[i].is_active()) {
+        return m_faders[i].update(current_time, m_leds[i]);
+      } else {
+        return false;
+      }
     }
 
     bool update(const millis_t current_time) {
@@ -146,11 +154,10 @@ struct LedManager {
     }
 
     void loop() {
-      fade_all_to(10, 10, 10, 500);
-      fade_all_to(10, 0, 0, 500);
-      fade_all_to(0, 10, 0, 500);
-      fade_all_to(0, 0, 10, 500);
-      fade_all_to(0, 0, 0, 500);
+      if (!m_fade_manager.update(millis())) {
+        fade_all_to_random(1000);
+      }
+      FastLED.show();
     }
 
   public: // web api
@@ -159,10 +166,46 @@ struct LedManager {
     }
 
   private: // helper methods
-    void fade_all_to(const uint8_t r, const uint8_t g, const uint8_t b, unsigned long duration) {
-      const auto start_time = millis();
-      Serial.printf("Starting fade: %d %d %d %d\n", r, g, b, duration);
-      m_fade_manager.set(start_time, duration, r, g, b);
+    void fade_all_to(const millis_t duration, const uint8_t r, const uint8_t g, const uint8_t b) {
+      m_fade_manager.set(millis(), duration, r, g, b);
+    }
+
+    void fade_all_to_random(const millis_t duration) {
+      const uint8_t r = rand_color();
+      const uint8_t g = rand_color();
+      const uint8_t b = rand_color();
+      m_fade_manager.set(millis(), duration, r, g, b);
+    }
+
+    void set_to(const size_t i, const millis_t duration, const uint8_t r, const uint8_t g, const uint8_t b) {
+      m_leds[i].r = r;
+      m_leds[i].g = g;
+      m_leds[i].b = b;
+    }
+
+    void set_all_to(const millis_t duration, const uint8_t r, const uint8_t g, const uint8_t b) {
+      for (size_t i = 0; i < NUM_LEDS; ++i) {
+        set_to(i, duration, r, g, b);
+      }
+    }
+
+    void set_random_to(const size_t i, const millis_t duration, const uint8_t r, const uint8_t g, const uint8_t b) {
+      m_leds[i].r = rand_color();
+      m_leds[i].g = rand_color();
+      m_leds[i].b = rand_color();
+    }
+
+    void set_random_all_to(const millis_t duration, const uint8_t r, const uint8_t g, const uint8_t b) {
+      for (size_t i = 0; i < NUM_LEDS; ++i) {
+        set_to(i, duration, r, g, b);
+      }
+    }
+
+    uint8_t rand_color() {
+      return random(256);
+    }
+
+    void wait_for_fade() {
       while (m_fade_manager.update(millis()))
       {
         FastLED.show();
