@@ -1,90 +1,162 @@
 # API
 
+## Modes
+
+### Idle:
+
+```
+{
+  name: "IDLE",
+}
+```
+
+### Random
+
+```
+{
+  name: "RANDOM",
+  type: type,
+  max_brightness: max_brightness,
+  delay_duration: delay_duration,
+  fade_duration: fade_duration,
+}
+```
+
+Where
+* `type` is "UNIFORM" or "INDIVIDUAL"
+* `max_brightness` is a maximum brightness value (the V in HCV) in [0, 256)
+* `delay_duration` is the duration in ms to pause on the selected random color
+* `fade_duration` is the duration in ms to transition to the selected random color
+
+Note
+* In uniform mode, all lights change with each other
+* In individual mode, each light changes to a random color individually
+
 ## GET
 
-```
-GET /led
-  [
-    {
-      red: value,
-      green: value,
-      blue: value,
-    },
-    ...
-  ]
-```
+### `GET /led`
 
-where value is an integer in [0, 256), and the index in the array corresponds to the LED
-
+Returns:
 ```
-GET /led?index=idx
+[
   {
+    index: index,
     red: value,
     green: value,
     blue: value,
-  }
+  },
+  ...
+]
 ```
 
-where
-* idx is the index of the led
-* value is an integer in [0, 256)
+Where
+* `index` is the index of the led
+* `value` is the color value as an integer in [0, 256)
 
+Note
+* the array will always be sorted by index
+* `index` will always correspond to its index in the array
+
+### `GET /led?index=index`
+
+Returns
 ```
-GET /led?index=idx&color=color
-  value
+{
+  index: index,
+  red: value,
+  green: value,
+  blue: value,
+}
 ```
 
-where
-* idx is the index of the led
-* color is "red", "green", or "blue"
-* value is an integer in [0, 256)
+Where
+* `index` is the index of the led
+* `value` is the color value as an integer in [0, 256)
 
+### `GET /mode`
+
+Returns
 ```
-GET /mode
-  mode
+{
+  mode: name
+  config_key: config_value,
+  ...
+}
 ```
 
-where
-* mode is "IDLE", "UNIFORM_RANDOM", or "EACH_RANDOM"
+Where
+* `name` is "IDLE", "UNIFORM_RANDOM", or "EACH_RANDOM"
+* `config_key` and `config_value` are the mode's settings (See Modes section)
 
 ## POST
 
-```
-POST /led
-  [
-    {
-      red: value,
-      green: value,
-      blue: value,
-    },
-    ...
-  ]
-```
+### `POST /led`
 
-where
-* value is an integer in [0, 256)
-* the index in the array corresponds to the LED
-* any and all of the colors are optional
-
+Body
 ```
-POST /led
+[
   {
-    index: value,
+    index: index,
+    red: red = undefined,
+    green: green = undefined,
+    blue: blue = undefined,
+    delay_duration: delay_duration = 0,
+    fade_duration: fade_duration = 0,
+  },
+  ...
+]
+```
+
+Where
+* `index` is the index of the led to set
+* `red`, `green` and `blue` are integers in [0, 256)
+* `delay` is the duration in ms before starting the change and defaults to 0
+* `fade` is the duration in ms of the transition time and defaults to 0
+
+Note
+* Zero delay and fade means the color is set instantly
+* Unspecified colors stay their current value
+* Unspecified indexes stay their current value
+* Calls while an led is transitioning will overwrite the previous transition
+
+### `POST /leds`
+
+```
+  {
     red: value,
     green: value,
     blue: value,
+    delay: delay_duration = 0,
+    fade: fade_duration = 0,
   }
 ```
 
-where
-* idx is the index of the led or "all"
-* value is an integer in [0, 256)
-* any and all of the colors are optional
+Where
+* `value` is an integer in [0, 256)
+* `delay` is the duration in ms before starting the change and defaults to 0
+* `fade` is the duration in ms of the transition time and defaults to 0
+
+### `POST /mode`
 
 ```
-POST /mode
-  mode
+{
+  mode: name
+  config_key: config_value,
+  ...
+}
 ```
 
-where
-* mode is "IDLE", "UNIFORM_RANDOM", or "EACH_RANDOM"
+Where
+* `name` is "IDLE", "UNIFORM_RANDOM", or "EACH_RANDOM"
+* `config_key` and `config_value` are the mode's settings (See Modes section)
+
+# Future
+
+Random mode with mood config: only warm colors, or cold colors, etc.
+
+Moving colors. Random with staggard delays.
+
+A delay relative to index option for setting
+
+A bounce mode where colors step closer to their neighbor's colors (front and
+back are neighbors, optionally)
