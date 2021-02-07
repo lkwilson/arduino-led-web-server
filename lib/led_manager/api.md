@@ -1,5 +1,10 @@
 # API
 
+Note:
+* All api calls are prefixed with `/api`
+* Any errors will return with a status code of 400 and a json response with
+  error as the key and message with the details.
+
 ## Modes
 
 ### Idle:
@@ -126,8 +131,8 @@ Note
     red: value,
     green: value,
     blue: value,
-    delay: delay_duration = 0,
-    fade: fade_duration = 0,
+    delay_duration: delay_duration = 0,
+    fade_duration: fade_duration = 0,
   }
 ```
 
@@ -160,3 +165,5 @@ A delay relative to index option for setting
 
 A bounce mode where colors step closer to their neighbor's colors (front and
 back are neighbors, optionally)
+
+Optional colors for the /leds api

@@ -8,6 +8,11 @@ enum class ColorStateEnum {
   FOLLOW,
 };
 
+enum class StateManagerEnum {
+  IDLE,
+  RANDOM,
+};
+
 struct FollowState {
   void update(const millis_t current_time, CRGB& led)
   {
@@ -135,12 +140,6 @@ struct ColorState {
   ColorStateEnum m_state;
 };
 
-enum class StateManagerEnum {
-  IDLE,
-  UNIFORM_RANDOM,
-  EACH_RANDOM,
-};
-
 template<size_t NUM_LEDS>
 struct StateManager {
   public: // ctors
@@ -214,7 +213,7 @@ struct StateManager {
           }
           case StateManagerEnum::IDLE:
           {
-
+            // Do nothing since idling
           }
           default:
           {
@@ -234,6 +233,14 @@ struct StateManager {
       m_state = StateManagerEnum::EACH_RANDOM;
       m_random_delay_duration = delay_duration;
       m_random_fade_duration = fade_duration;
+    }
+
+    void set_idle_state() {
+      m_state = StateManagerEnum::IDLE;
+    }
+
+    void get_state() const {
+      return m_state;
     }
 
   private: // helper methods
