@@ -10,7 +10,8 @@ enum class ColorStateEnum {
 
 enum class StateManagerEnum {
   IDLE,
-  RANDOM,
+  UNIFORM_RANDOM,
+  EACH_RANDOM,
 };
 
 struct FollowState {
@@ -239,7 +240,7 @@ struct StateManager {
       m_state = StateManagerEnum::IDLE;
     }
 
-    void get_state() const {
+    StateManagerEnum get_state() const {
       return m_state;
     }
 

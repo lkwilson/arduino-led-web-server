@@ -29,30 +29,16 @@ struct LedManager {
       Serial.println("Adding handles for LedManager");
 
       server.on("/api/led", HTTP_GET, [this](AsyncWebServerRequest* request) {
-        if (request.hasParam("index")) {
-          const auto& index_param = request.getParam("index");
-          // TODO: add error checking
-          const auto index = index_param.value().toInt();
+        if (request->hasParam("index")) {
+          const auto index = request->getParam("index")->value().toInt();
           this->api_get_led(request, index);
         } else {
-          this->api_get_led(request, );
+          this->api_get_led(request);
         }
       });
 
       server.on("/api/mode", HTTP_GET, [this](AsyncWebServerRequest* request) {
         this->api_get_mode(request);
-      });
-
-      server.on("/api/led", HTTP_POST, [this](AsyncWebServerRequest* request) {
-        this->api_post_led(request);
-      });
-
-      server.on("/api/leds", HTTP_POST, [this](AsyncWebServerRequest* request) {
-        this->api_post_leds(request);
-      });
-
-      server.on("/api/mode", HTTP_POST, [this](AsyncWebServerRequest* request) {
-        this->api_post_mode(request);
       });
 
       // TODO: this apparently doesn't catch GET requests, so I should be safe
@@ -83,14 +69,15 @@ struct LedManager {
 
     void api_get_led(AsyncWebServerRequest* request, size_t index) {
       auto response = new AsyncJsonResponse();
-      JsonObject& root = response->getRoot();
+      auto&& root = response->getRoot();
+      auto&& response_json = root.as<JsonObject>();
 
       if (index < NUM_LEDS) {
         const auto& led = m_leds[index];
-        root["index"] = index;
-        root["red"] = led.red;
-        root["green"] = led.green;
-        root["blue"] = led.blue;
+        response_json["index"] = index;
+        response_json["red"] = led.red;
+        response_json["green"] = led.green;
+        response_json["blue"] = led.blue;
 
         response->setLength();
         request->send(response);
@@ -119,17 +106,17 @@ struct LedManager {
 
     void api_get_mode(AsyncWebServerRequest* request) {
       auto response = new AsyncJsonResponse();
-      auto&& root = response->getRoot();
-      // TODO: Do I need to cast it?
-      //auto&& root = response->getRoot().as<JsonObject>();
+      auto&& root = response->getRoot().as<JsonObject>();
 
+      const auto& state = m_state_manager.get_state();
       switch (state) {
-        case IDLE:
+        case StateManagerEnum::IDLE:
         {
           root["type"] = "IDLE";
           break;
         }
-        case RANDOM:
+        case StateManagerEnum::UNIFORM_RANDOM:
+        case StateManagerEnum::EACH_RANDOM:
         {
           root["type"] = "RANDOM";
           // TODO: Build out the random framework
@@ -158,8 +145,8 @@ struct LedManager {
 
       const auto current_time = millis();
 
-      auto&& data = json.as<JsonArray>();
-      for (auto&& led_data_variant : data) {
+      const auto& data = json.as<JsonArray>();
+      for (const auto& led_data_variant : data) {
         if (!led_data_variant.is<JsonObject>()) {
           error(request, "Expected objects in the array");
           return;
@@ -170,11 +157,11 @@ struct LedManager {
         if (!led_data.containsKey("index")) {
           error(request, "index must be specified");
           return;
-        } else if (!led_data["index"].is<int>()) {
+        } else if (!led_data["index"].is<size_t>()) {
           error(request, "index should be a number");
           return;
         }
-        const auto index = convert_to_index(led_data["index"].as<int>());
+        const auto index = led_data["index"].as<size_t>();
         if (index >= NUM_LEDS) {
           error(request, "An LED index was out of range");
           return;
@@ -185,20 +172,20 @@ struct LedManager {
         millis_t fade_duration = 0;
 
         if (led_data.containsKey("delay_duration")) {
-          if (!led_data["delay_duration"].is<int>()) {
+          if (!led_data["delay_duration"].is<millis_t>()) {
             error(request, "delay_duration should be a number");
             return;
           }
 
-          delay_duration = convert_to_time_value(led_data["delay_duration"].as<int>());
+          delay_duration = led_data["delay_duration"].as<millis_t>();
         }
         if (led_data.containsKey("fade_duration")) {
-          if (!led_data["fade_duration"].is<int>()) {
+          if (!led_data["fade_duration"].is<millis_t>()) {
             error(request, "fade_duration should be a number");
             return;
           }
 
-          fade_duration = convert_to_time_value(led_data["fade_duration"].as<int>());
+          fade_duration = led_data["fade_duration"].as<millis_t>();
         }
 
         // Update colors
@@ -207,28 +194,31 @@ struct LedManager {
         auto green = led.g;
         auto blue = led.b;
         if (led_data.containsKey("red")) {
-          if (!led_data["red"].is<int>()) {
-            error(request, "red should be a number")
+          if (!led_data["red"].is<uint8_t>()) {
+            error(request, "invalid value for red");
+            return;
           }
 
-          red = convert_to_color_value(led_data["red"].as<int>());
+          red = led_data["red"].as<uint8_t>();
         }
-        if (led.containsKey("green")) {
-          if (!led["green"].is<int>()) {
-            error(request, "green should be a number")
+        if (led_data.containsKey("green")) {
+          if (!led_data["green"].is<uint8_t>()) {
+            error(request, "invalid value for green");
+            return;
           }
 
-          green = convert_to_color_value(led["green"].as<int>());
+          green = led_data["green"].as<uint8_t>();
         }
-        if (led.containsKey("blue")) {
-          if (!led["blue"].is<int>()) {
-            error(request, "blue should be a number")
+        if (led_data.containsKey("blue")) {
+          if (!led_data["blue"].is<uint8_t>()) {
+            error(request, "invalid value for blue");
+            return;
           }
 
-          blue = convert_to_color_value(led["blue"].as<int>());
+          blue = led_data["blue"].as<uint8_t>();
         }
         m_state_manager.set(
-            index
+            index,
             current_time,
             delay_duration,
             fade_duration,
@@ -246,59 +236,60 @@ struct LedManager {
 
       const auto& data = json.as<JsonObject>();
 
+      const auto current_time = millis();
       // Get delay and fade
       millis_t delay_duration = 0;
       millis_t fade_duration = 0;
 
       if (data.containsKey("delay_duration")) {
-        if (!data["delay_duration"].is<int>()) {
+        if (!data["delay_duration"].is<millis_t>()) {
           error(request, "delay_duration should be a number");
           return;
         }
 
-        delay_duration = convert_to_time_value(data["delay_duration"].as<int>());
+        delay_duration = data["delay_duration"].as<millis_t>();
       }
       if (data.containsKey("fade_duration")) {
-        if (!data["fade_duration"].is<int>()) {
+        if (!data["fade_duration"].is<millis_t>()) {
           error(request, "fade_duration should be a number");
           return;
         }
 
-        fade_duration = convert_to_time_value(data["fade_duration"].as<int>());
+        fade_duration = data["fade_duration"].as<millis_t>();
       }
 
       if (!data.containsKey("red")) {
         error(request, "red should be a number");
         return;
-      } else if (!data["red"].is<int>()) {
+      } else if (!data["red"].is<uint8_t>()) {
         error(request, "red should be a number");
         return;
       }
-      const auto red = convert_to_color_value(data["red"].as<int>())
+      const auto red = data["red"].as<uint8_t>();
 
       if (!data.containsKey("green")) {
         error(request, "green should be a number");
         return;
-      } else if (!data["green"].is<int>()) {
+      } else if (!data["green"].is<uint8_t>()) {
         error(request, "green should be a number");
         return;
       }
-      const auto green = convert_to_color_value(data["green"].as<int>())
+      const auto green = data["green"].as<uint8_t>();
 
       if (!data.containsKey("blue")) {
         error(request, "blue should be a number");
         return;
-      } else if (!data["blue"].is<int>()) {
+      } else if (!data["blue"].is<uint8_t>()) {
         error(request, "blue should be a number");
         return;
       }
-      const auto blue = convert_to_color_value(data["blue"].as<int>())
+      const auto blue = data["blue"].as<uint8_t>();
 
       m_state_manager.set(
-          current_time
+          current_time,
           delay_duration,
           fade_duration,
-          red, green, blue)
+          red, green, blue);
       request->send(200);
     }
 
@@ -313,7 +304,7 @@ struct LedManager {
       if (!data.containsKey("name")) {
         error(request, "name required");
         return;
-      } else if (!data["name"].is<char *>()) {
+      } else if (!data["name"].is<String>()) {
         error(request, "name must be a string");
         return;
       }
@@ -331,16 +322,16 @@ struct LedManager {
 
   private: // helpers
 
-    void set_mode_idle(AsyncWebServerRequest* request, const JsonObject&) const {
+    void set_mode_idle(AsyncWebServerRequest* request, const JsonObject&) {
       m_state_manager.set_idle_state();
       request->send(200);
     }
 
-    void set_mode_random(AsyncWebServerRequest* request, const JsonObject& data) const {
+    void set_mode_random(AsyncWebServerRequest* request, const JsonObject& data) {
       if (!data.containsKey("type")) {
         error(request, "type is required");
         return;
-      } else if (!data["type"].is<char *>()) {
+      } else if (!data["type"].is<String>()) {
         error(request, "type should be a string");
         return;
       }
@@ -351,20 +342,20 @@ struct LedManager {
       millis_t fade_duration = 0;
 
       if (data.containsKey("delay_duration")) {
-        if (!data["delay_duration"].is<int>()) {
+        if (!data["delay_duration"].is<millis_t>()) {
           error(request, "delay_duration should be a number");
           return;
         }
 
-        delay_duration = convert_to_time_value(data["delay_duration"].as<int>());
+        delay_duration = data["delay_duration"].as<millis_t>();
       }
       if (data.containsKey("fade_duration")) {
-        if (!data["fade_duration"].is<int>()) {
+        if (!data["fade_duration"].is<millis_t>()) {
           error(request, "fade_duration should be a number");
           return;
         }
 
-        fade_duration = convert_to_time_value(data["fade_duration"].as<int>());
+        fade_duration = data["fade_duration"].as<millis_t>();
       }
 
       // TODO: match apis and add brightness
@@ -383,32 +374,10 @@ struct LedManager {
       request->send(200);
     }
 
-    size_t convert_to_color_value(int val) const {
-      if (val < 0) {
-        val = 0;
-      } else if (val > 255) {
-        val = 255;
-      }
-      return static_cast<size_t>(val);
-    }
-
-    millis_t convert_to_time_value(int val) const {
-      if (val < 0) {
-        val = 0;
-      }
-      return static_cast<millis_t>(val);
-    }
-
-    size_t convert_to_index(int val) const {
-      if (val < 0) {
-        val = 0;
-      }
-      return static_cast<size_t>(val);
-    }
-
-    void error(AsyncWebServerRequest* request, char* msg) const {
+    template<typename msg_t>
+    void error(AsyncWebServerRequest* request, msg_t&& msg) const {
       // TODO: Support error codes
-      request->send(400, "text/plain", msg);
+      request->send(400, "text/plain", std::forward<msg_t>(msg));
     }
 
   private: // members
