@@ -15,6 +15,7 @@ struct LedManager {
   public: // api
     void setup() {
       Serial.printf("LED manager loading with %d leds and data pin %d\n", NUM_LEDS, DATA_PIN);
+      FastLED.setBrightness(100);
       FastLED.addLeds<NEOPIXEL, DATA_PIN>(m_leds, NUM_LEDS);
     }
 
@@ -37,6 +38,12 @@ struct LedManager {
           "/api/leds",
           [this](AsyncWebServerRequest *request, JsonVariant &json) {
             this->api_post_leds(request, json);
+          }));
+
+      server.addHandler(new AsyncCallbackJsonWebHandler(
+          "/api/brightness",
+          [this](AsyncWebServerRequest *request, JsonVariant &json) {
+            this->api_post_brightness(request, json);
           }));
 
       server.addHandler(new AsyncCallbackJsonWebHandler(
@@ -121,7 +128,7 @@ struct LedManager {
         }
         default:
         {
-          error(request, "Unable to get state");
+          error(request, "Unable to get current mode");
           delete response;
           return;
         }
@@ -142,22 +149,22 @@ struct LedManager {
       const auto& data = json.as<JsonArray>();
       for (const auto& led_data_variant : data) {
         if (not led_data_variant.is<JsonObject>()) {
-          error(request, "Expected objects in the array");
+          error(request, "Expected objects within the array");
           return;
         }
         const auto& led_data = led_data_variant.as<JsonObject>();
 
         // Get index
         if (not led_data.containsKey("index")) {
-          error(request, "index must be specified");
+          error(request, "index is required for each array entry");
           return;
         } else if (not led_data["index"].is<size_t>()) {
-          error(request, "index should be a number");
+          error(request, "invalid value for index");
           return;
         }
         const auto index = led_data["index"].as<size_t>();
         if (index >= NUM_LEDS) {
-          error(request, "An LED index was out of range");
+          error(request, "index is too large");
           return;
         }
 
@@ -167,7 +174,7 @@ struct LedManager {
 
         if (led_data.containsKey("delay_duration")) {
           if (not led_data["delay_duration"].is<millis_t>()) {
-            error(request, "delay_duration should be a number");
+            error(request, "Invalid value for delay_duration");
             return;
           }
 
@@ -175,7 +182,7 @@ struct LedManager {
         }
         if (led_data.containsKey("fade_duration")) {
           if (not led_data["fade_duration"].is<millis_t>()) {
-            error(request, "fade_duration should be a number");
+            error(request, "Invalid value for fade_duration");
             return;
           }
 
@@ -189,7 +196,7 @@ struct LedManager {
         auto blue = led.b;
         if (led_data.containsKey("red")) {
           if (not led_data["red"].is<uint8_t>()) {
-            error(request, "invalid value for red");
+            error(request, "Invalid value for red");
             return;
           }
 
@@ -197,7 +204,7 @@ struct LedManager {
         }
         if (led_data.containsKey("green")) {
           if (not led_data["green"].is<uint8_t>()) {
-            error(request, "invalid value for green");
+            error(request, "Invalid value for green");
             return;
           }
 
@@ -205,7 +212,7 @@ struct LedManager {
         }
         if (led_data.containsKey("blue")) {
           if (not led_data["blue"].is<uint8_t>()) {
-            error(request, "invalid value for blue");
+            error(request, "Invalid value for blue");
             return;
           }
 
@@ -237,7 +244,7 @@ struct LedManager {
 
       if (data.containsKey("delay_duration")) {
         if (not data["delay_duration"].is<millis_t>()) {
-          error(request, "delay_duration should be a number");
+          error(request, "Invalid value for delay_duration");
           return;
         }
 
@@ -245,7 +252,7 @@ struct LedManager {
       }
       if (data.containsKey("fade_duration")) {
         if (not data["fade_duration"].is<millis_t>()) {
-          error(request, "fade_duration should be a number");
+          error(request, "Invalid value for fade_duration");
           return;
         }
 
@@ -253,28 +260,28 @@ struct LedManager {
       }
 
       if (not data.containsKey("red")) {
-        error(request, "red should be a number");
+        error(request, "red is required");
         return;
       } else if (not data["red"].is<uint8_t>()) {
-        error(request, "red should be a number");
+        error(request, "Invalid value for red");
         return;
       }
       const auto red = data["red"].as<uint8_t>();
 
       if (not data.containsKey("green")) {
-        error(request, "green should be a number");
+        error(request, "green is required");
         return;
       } else if (not data["green"].is<uint8_t>()) {
-        error(request, "green should be a number");
+        error(request, "Invalid value for green");
         return;
       }
       const auto green = data["green"].as<uint8_t>();
 
       if (not data.containsKey("blue")) {
-        error(request, "blue should be a number");
+        error(request, "blue is required");
         return;
       } else if (not data["blue"].is<uint8_t>()) {
-        error(request, "blue should be a number");
+        error(request, "Invalid value for blue");
         return;
       }
       const auto blue = data["blue"].as<uint8_t>();
@@ -296,10 +303,10 @@ struct LedManager {
       const auto& data = json.as<JsonObject>();
 
       if (not data.containsKey("name")) {
-        error(request, "name required");
+        error(request, "name is required");
         return;
       } else if (not data["name"].is<String>()) {
-        error(request, "name must be a string");
+        error(request, "Invalid value for name");
         return;
       }
 
@@ -314,6 +321,28 @@ struct LedManager {
       }
     }
 
+    void api_post_brightness(AsyncWebServerRequest* request, JsonVariant& json) {
+      if (not json.is<JsonObject>()) {
+        error(request, "Expected an object");
+        return;
+      }
+
+      const auto& data = json.as<JsonObject>();
+
+      if (not data.containsKey("brightness")) {
+        error(request, "brightness is required");
+        return;
+      } else if (not data["brightness"].is<uint8_t>()) {
+        error(request, "Invalid value for brightness");
+        return;
+      }
+
+      const auto brightness = data["brightness"].as<uint8_t>();
+      FastLED.setBrightness(brightness);
+
+      request->send(200);
+    }
+
   private: // helpers
 
     void set_mode_idle(AsyncWebServerRequest* request, const JsonObject&) {
@@ -326,7 +355,7 @@ struct LedManager {
         error(request, "type is required");
         return;
       } else if (not data["type"].is<String>()) {
-        error(request, "type should be a string");
+        error(request, "Invalid value for type");
         return;
       }
       auto&& type = data["type"].as<String>();
@@ -337,7 +366,7 @@ struct LedManager {
 
       if (data.containsKey("delay_duration")) {
         if (not data["delay_duration"].is<millis_t>()) {
-          error(request, "delay_duration should be a number");
+          error(request, "Invalid value for delay_duration");
           return;
         }
 
@@ -345,7 +374,7 @@ struct LedManager {
       }
       if (data.containsKey("fade_duration")) {
         if (not data["fade_duration"].is<millis_t>()) {
-          error(request, "fade_duration should be a number");
+          error(request, "Invalid value for fade_duration");
           return;
         }
 
@@ -362,7 +391,7 @@ struct LedManager {
             delay_duration,
             fade_duration);
       } else {
-        error(request, "Invalid random type");
+        error(request, "Invalid type for random mode");
         return;
       }
       request->send(200);

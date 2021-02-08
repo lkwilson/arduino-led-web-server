@@ -21,7 +21,6 @@ Note:
 {
   name: "RANDOM",
   type: type,
-  max_brightness: max_brightness,
   delay_duration: delay_duration,
   fade_duration: fade_duration,
 }
@@ -29,7 +28,6 @@ Note:
 
 Where
 * `type` is "UNIFORM" or "INDIVIDUAL"
-* `max_brightness` is a maximum brightness value (the V in HCV) in [0, 256)
 * `delay_duration` is the duration in ms to pause on the selected random color
 * `fade_duration` is the duration in ms to transition to the selected random color
 
@@ -154,6 +152,17 @@ Where
 Where
 * `name` is "IDLE", "UNIFORM_RANDOM", or "EACH_RANDOM"
 * `config_key` and `config_value` are the mode's settings (See Modes section)
+
+### `POST /brightness
+
+```
+{
+  brightness: brightness
+}
+```
+
+Where
+* `brightness` is an integer from 0 through 255
 
 # Future
 
