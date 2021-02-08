@@ -1,7 +1,5 @@
 #pragma once
 
-// TODO: change ! to not
-
 #include <ESPAsyncWebServer.h>
 #include <AsyncJson.h>
 #include <ArduinoJson.h>
@@ -28,23 +26,7 @@ struct LedManager {
     void add_handles(AsyncWebServer& server) {
       Serial.println("Adding handles for LedManager");
 
-      server.on("/api/led", HTTP_GET, [this](AsyncWebServerRequest* request) {
-        if (request->hasParam("index")) {
-          const auto index = request->getParam("index")->value().toInt();
-          this->api_get_led(request, index);
-        } else {
-          this->api_get_led(request);
-        }
-      });
-
-      server.on("/api/mode", HTTP_GET, [this](AsyncWebServerRequest* request) {
-        this->api_get_mode(request);
-      });
-
-      // TODO: this apparently doesn't catch GET requests, so I should be safe
-      // to put this above the get requests.
-      // TODO: this also catches PUT and PATCH as well, but that's not a big
-      // deal.
+      // POST REQUESTS
       server.addHandler(new AsyncCallbackJsonWebHandler(
           "/api/led",
           [this](AsyncWebServerRequest *request, JsonVariant &json) {
@@ -62,15 +44,27 @@ struct LedManager {
           [this](AsyncWebServerRequest *request, JsonVariant &json) {
             this->api_post_mode(request, json);
           }));
-    }
 
+      // GET REQUESTS
+      server.on("/api/led", HTTP_GET, [this](AsyncWebServerRequest* request) {
+        if (request->hasParam("index")) {
+          const auto index = request->getParam("index")->value().toInt();
+          this->api_get_led(request, index);
+        } else {
+          this->api_get_led(request);
+        }
+      });
+
+      server.on("/api/mode", HTTP_GET, [this](AsyncWebServerRequest* request) {
+        this->api_get_mode(request);
+      });
+    }
 
   public: // web api
 
     void api_get_led(AsyncWebServerRequest* request, size_t index) {
       auto response = new AsyncJsonResponse();
-      auto&& root = response->getRoot();
-      auto&& response_json = root.as<JsonObject>();
+      auto&& response_json = response->getRoot().as<JsonObject>();
 
       if (index < NUM_LEDS) {
         const auto& led = m_leds[index];
@@ -138,7 +132,7 @@ struct LedManager {
     }
 
     void api_post_led(AsyncWebServerRequest* request, JsonVariant& json) {
-      if (!json.is<JsonArray>()) {
+      if (not json.is<JsonArray>()) {
         error(request, "Expected an array");
         return;
       }
@@ -147,17 +141,17 @@ struct LedManager {
 
       const auto& data = json.as<JsonArray>();
       for (const auto& led_data_variant : data) {
-        if (!led_data_variant.is<JsonObject>()) {
+        if (not led_data_variant.is<JsonObject>()) {
           error(request, "Expected objects in the array");
           return;
         }
         const auto& led_data = led_data_variant.as<JsonObject>();
 
         // Get index
-        if (!led_data.containsKey("index")) {
+        if (not led_data.containsKey("index")) {
           error(request, "index must be specified");
           return;
-        } else if (!led_data["index"].is<size_t>()) {
+        } else if (not led_data["index"].is<size_t>()) {
           error(request, "index should be a number");
           return;
         }
@@ -172,7 +166,7 @@ struct LedManager {
         millis_t fade_duration = 0;
 
         if (led_data.containsKey("delay_duration")) {
-          if (!led_data["delay_duration"].is<millis_t>()) {
+          if (not led_data["delay_duration"].is<millis_t>()) {
             error(request, "delay_duration should be a number");
             return;
           }
@@ -180,7 +174,7 @@ struct LedManager {
           delay_duration = led_data["delay_duration"].as<millis_t>();
         }
         if (led_data.containsKey("fade_duration")) {
-          if (!led_data["fade_duration"].is<millis_t>()) {
+          if (not led_data["fade_duration"].is<millis_t>()) {
             error(request, "fade_duration should be a number");
             return;
           }
@@ -194,7 +188,7 @@ struct LedManager {
         auto green = led.g;
         auto blue = led.b;
         if (led_data.containsKey("red")) {
-          if (!led_data["red"].is<uint8_t>()) {
+          if (not led_data["red"].is<uint8_t>()) {
             error(request, "invalid value for red");
             return;
           }
@@ -202,7 +196,7 @@ struct LedManager {
           red = led_data["red"].as<uint8_t>();
         }
         if (led_data.containsKey("green")) {
-          if (!led_data["green"].is<uint8_t>()) {
+          if (not led_data["green"].is<uint8_t>()) {
             error(request, "invalid value for green");
             return;
           }
@@ -210,7 +204,7 @@ struct LedManager {
           green = led_data["green"].as<uint8_t>();
         }
         if (led_data.containsKey("blue")) {
-          if (!led_data["blue"].is<uint8_t>()) {
+          if (not led_data["blue"].is<uint8_t>()) {
             error(request, "invalid value for blue");
             return;
           }
@@ -229,7 +223,7 @@ struct LedManager {
     }
 
     void api_post_leds(AsyncWebServerRequest* request, JsonVariant& json) {
-      if (!json.is<JsonObject>()) {
+      if (not json.is<JsonObject>()) {
         error(request, "Expected an object");
         return;
       }
@@ -242,7 +236,7 @@ struct LedManager {
       millis_t fade_duration = 0;
 
       if (data.containsKey("delay_duration")) {
-        if (!data["delay_duration"].is<millis_t>()) {
+        if (not data["delay_duration"].is<millis_t>()) {
           error(request, "delay_duration should be a number");
           return;
         }
@@ -250,7 +244,7 @@ struct LedManager {
         delay_duration = data["delay_duration"].as<millis_t>();
       }
       if (data.containsKey("fade_duration")) {
-        if (!data["fade_duration"].is<millis_t>()) {
+        if (not data["fade_duration"].is<millis_t>()) {
           error(request, "fade_duration should be a number");
           return;
         }
@@ -258,28 +252,28 @@ struct LedManager {
         fade_duration = data["fade_duration"].as<millis_t>();
       }
 
-      if (!data.containsKey("red")) {
+      if (not data.containsKey("red")) {
         error(request, "red should be a number");
         return;
-      } else if (!data["red"].is<uint8_t>()) {
+      } else if (not data["red"].is<uint8_t>()) {
         error(request, "red should be a number");
         return;
       }
       const auto red = data["red"].as<uint8_t>();
 
-      if (!data.containsKey("green")) {
+      if (not data.containsKey("green")) {
         error(request, "green should be a number");
         return;
-      } else if (!data["green"].is<uint8_t>()) {
+      } else if (not data["green"].is<uint8_t>()) {
         error(request, "green should be a number");
         return;
       }
       const auto green = data["green"].as<uint8_t>();
 
-      if (!data.containsKey("blue")) {
+      if (not data.containsKey("blue")) {
         error(request, "blue should be a number");
         return;
-      } else if (!data["blue"].is<uint8_t>()) {
+      } else if (not data["blue"].is<uint8_t>()) {
         error(request, "blue should be a number");
         return;
       }
@@ -294,17 +288,17 @@ struct LedManager {
     }
 
     void api_post_mode(AsyncWebServerRequest* request, JsonVariant& json) {
-      if (!json.is<JsonObject>()) {
+      if (not json.is<JsonObject>()) {
         error(request, "Expected an object");
         return;
       }
 
       const auto& data = json.as<JsonObject>();
 
-      if (!data.containsKey("name")) {
+      if (not data.containsKey("name")) {
         error(request, "name required");
         return;
-      } else if (!data["name"].is<String>()) {
+      } else if (not data["name"].is<String>()) {
         error(request, "name must be a string");
         return;
       }
@@ -328,10 +322,10 @@ struct LedManager {
     }
 
     void set_mode_random(AsyncWebServerRequest* request, const JsonObject& data) {
-      if (!data.containsKey("type")) {
+      if (not data.containsKey("type")) {
         error(request, "type is required");
         return;
-      } else if (!data["type"].is<String>()) {
+      } else if (not data["type"].is<String>()) {
         error(request, "type should be a string");
         return;
       }
@@ -342,7 +336,7 @@ struct LedManager {
       millis_t fade_duration = 0;
 
       if (data.containsKey("delay_duration")) {
-        if (!data["delay_duration"].is<millis_t>()) {
+        if (not data["delay_duration"].is<millis_t>()) {
           error(request, "delay_duration should be a number");
           return;
         }
@@ -350,7 +344,7 @@ struct LedManager {
         delay_duration = data["delay_duration"].as<millis_t>();
       }
       if (data.containsKey("fade_duration")) {
-        if (!data["fade_duration"].is<millis_t>()) {
+        if (not data["fade_duration"].is<millis_t>()) {
           error(request, "fade_duration should be a number");
           return;
         }
