@@ -47,17 +47,14 @@ struct FadeState {
       const millis_t delay_duration,
       const millis_t fade_duration,
       CRGB& led,
-      const uint8_t target_red,
-      const uint8_t target_green,
-      const uint8_t target_blue)
+      CRGB target_color)
   {
     m_init_time = init_time;
     m_delay_duration = delay_duration;
     m_fade_duration = fade_duration;
-    m_red.set(led.red, target_red);
-    m_green.set(led.green, target_green);
-    m_blue.set(led.blue, target_blue);
-
+    m_red.set(led.red, target_color.red);
+    m_green.set(led.green, target_color.green);
+    m_blue.set(led.blue, target_color.blue);
   }
 
   // returns true when done
@@ -129,11 +126,9 @@ struct ColorState {
       const millis_t delay_duration,
       const millis_t fade_duration,
       CRGB& led,
-      const uint8_t target_red,
-      const uint8_t target_green,
-      const uint8_t target_blue) {
+      CRGB target_color) {
     m_state = ColorStateEnum::FADE;
-    m_fade.set(init_time, delay_duration, fade_duration, led, target_red, target_green, target_blue);
+    m_fade.set(init_time, delay_duration, fade_duration, led, target_color);
   }
 
   FadeState m_fade;
@@ -154,22 +149,28 @@ struct StateManager {
         const millis_t current_time,
         const millis_t delay_duration,
         const millis_t fade_duration,
-        const uint8_t r,
-        const uint8_t g,
-        const uint8_t b) {
-      m_states[i].start_fade_state(current_time, delay_duration, fade_duration, m_leds[i], r, g, b);
+        const CRGB color) {
+      m_states[i].start_fade_state(
+          current_time,
+          delay_duration,
+          fade_duration,
+          m_leds[i],
+          color);
     }
 
     void set(
         const millis_t current_time,
         const millis_t delay_duration,
         const millis_t fade_duration,
-        const uint8_t r,
-        const uint8_t g,
-        const uint8_t b) {
+        const CRGB color) {
       for (size_t i = 0; i < NUM_LEDS; ++i)
       {
-        set(i, current_time, delay_duration, fade_duration, r, g, b);
+        set(
+            i,
+            current_time,
+            delay_duration,
+            fade_duration,
+            color);
       }
     }
 
@@ -187,13 +188,12 @@ struct StateManager {
         switch (m_state) {
           case StateManagerEnum::UNIFORM_RANDOM:
           {
+            CRGB rnd_color = CHSV(rand_color(), 255, 255);
             set(
                 millis(),
                 m_random_delay_duration,
                 m_random_fade_duration,
-                rand_color(),
-                rand_color(),
-                rand_color());
+                rnd_color);
             break;
           }
           case StateManagerEnum::EACH_RANDOM:
@@ -201,14 +201,13 @@ struct StateManager {
             const auto current_time = millis();
             for (size_t i = 0; i < NUM_LEDS; ++i)
             {
+              CRGB rnd_color = CHSV(rand_color(), 255, 255);
               set(
                   i,
                   current_time,
                   m_random_delay_duration,
                   m_random_fade_duration,
-                  rand_color(),
-                  rand_color(),
-                  rand_color());
+                  rnd_color);
             }
             break;
           }

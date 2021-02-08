@@ -15,7 +15,6 @@ struct LedManager {
   public: // api
     void setup() {
       Serial.printf("LED manager loading with %d leds and data pin %d\n", NUM_LEDS, DATA_PIN);
-      FastLED.setBrightness(100);
       FastLED.addLeds<NEOPIXEL, DATA_PIN>(m_leds, NUM_LEDS);
     }
 
@@ -223,7 +222,7 @@ struct LedManager {
             current_time,
             delay_duration,
             fade_duration,
-            red, green, blue);
+            CRGB(red, green, blue));
       }
 
       request->send(200);
@@ -290,7 +289,7 @@ struct LedManager {
           current_time,
           delay_duration,
           fade_duration,
-          red, green, blue);
+          CRGB(red, green, blue));
       request->send(200);
     }
 
