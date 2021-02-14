@@ -5,30 +5,28 @@ using array_t = T[NUM_LEDS];
 
 using millis_t = decltype(millis());
 
-namespace PtrUtils {
+namespace lw {
 
-// TODO: I think I can do:
-// operator T*() && { auto t = m_t; m_t = nullptr; return t; }
 template<typename T>
-struct PointerGuard {
+struct ptr_t {
   public: // ctors
     // get resource
-    PointerGuard() : m_t(nullptr) {}
-    PointerGuard(T* t) : m_t(t) {}
+    ptr_t() : m_t(nullptr) {}
+    ptr_t(T* t) : m_t(t) {}
 
     // non copyable
-    PointerGuard(const PointerGuard& guard) = delete;
-    PointerGuard& operator=(const PointerGuard& guard) = delete;
+    ptr_t(const ptr_t& guard) = delete;
+    ptr_t& operator=(const ptr_t& guard) = delete;
 
     // only movable
-    PointerGuard(PointerGuard&& guard) {
+    ptr_t(ptr_t&& guard) {
       std::swap(m_t, guard.m_t);
     }
-    PointerGuard& operator=(PointerGuard&& guard) {
+    ptr_t& operator=(ptr_t&& guard) {
       std::swap(m_t, guard.m_t);
       return *this;
     }
-    PointerGuard& operator=(T* t) {
+    ptr_t& operator=(T* t) {
       if (m_t != nullptr) {
         delete m_t;
       }
@@ -37,7 +35,7 @@ struct PointerGuard {
     }
 
     // release resource
-    ~PointerGuard() {
+    ~ptr_t() {
       if (m_t != nullptr) {
         delete m_t;
       }
@@ -84,13 +82,17 @@ struct PointerGuard {
       return m_t != nullptr;
     }
 
+    operator T*() && {
+      return release();
+    }
+
   private: // members
     T* m_t;
 };
 
 template<typename T, typename... Args>
-PointerGuard<T> make_pointer_guard(Args&&... args) {
+ptr_t<T> make_ptr(Args&&... args) {
   return new T(std::forward<Args>(args)...);
 }
 
-} // namespace PtrUtils
+} // namespace lw

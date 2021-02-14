@@ -67,7 +67,7 @@ struct LedManager {
   public: // web api
 
     void api_get_led(AsyncWebServerRequest* request, size_t index) {
-      auto response = PtrUtils::make_pointer_guard<AsyncJsonResponse>();
+      auto response = lw::make_ptr<AsyncJsonResponse>();
       auto&& response_json = response->getRoot().as<JsonObject>();
 
       if (index < NUM_LEDS) {
@@ -80,12 +80,12 @@ struct LedManager {
         response->setLength();
         request->send(response.release());
       } else {
-        WebUtils::error(request, "index out of bounds");
+        lw::error(request, "index out of bounds");
       }
     }
  
     void api_get_led(AsyncWebServerRequest* request) {
-      auto response = PtrUtils::make_pointer_guard<AsyncJsonResponse>(true /*is array*/);
+      auto response = lw::make_ptr<AsyncJsonResponse>(true /*is array*/);
       auto&& root = response->getRoot();
 
       for (size_t i = 0; i < NUM_LEDS; ++i) {
@@ -102,7 +102,7 @@ struct LedManager {
     }
 
     void api_get_mode(AsyncWebServerRequest* request) {
-      auto response = PtrUtils::make_pointer_guard<AsyncJsonResponse>();
+      auto response = lw::make_ptr<AsyncJsonResponse>();
       auto&& root = response->getRoot().as<JsonObject>();
 
       const auto& state = m_state_manager.get_state();
@@ -119,7 +119,7 @@ struct LedManager {
           break;
         }
         default: {
-          WebUtils::error(request, "Unable to get current mode");
+          lw::error(request, "Unable to get current mode");
           return;
         }
       }
@@ -130,7 +130,7 @@ struct LedManager {
 
     void api_post_led(AsyncWebServerRequest* request, JsonVariant& json) {
       if (not json.is<JsonArray>()) {
-        WebUtils::error(request, "Expected an array");
+        lw::error(request, "Expected an array");
         return;
       }
       auto&& data = json.as<JsonArray>();
@@ -138,27 +138,27 @@ struct LedManager {
       const auto current_time = millis();
       for (const auto& led_data_variant : data) {
         if (not led_data_variant.is<JsonObject>()) {
-          WebUtils::error(request, "Expected objects within the array");
+          lw::error(request, "Expected objects within the array");
           return;
         }
         auto&& led_data = led_data_variant.as<JsonObject>();
 
         size_t index;
-        if (not WebUtils::load_value(request, index, led_data, "index")) { return; }
+        if (not lw::load_value(request, index, led_data, "index")) { return; }
         if (index >= NUM_LEDS) {
-          WebUtils::error(request, "index is too large");
+          lw::error(request, "index is too large");
           return;
         }
 
         millis_t delay_duration = 0;
         millis_t fade_duration = 0;
-        if (not WebUtils::load_value_if_any(request, delay_duration, led_data, "delay_duration")) { return; }
-        if (not WebUtils::load_value_if_any(request, fade_duration, led_data, "fade_duration")) { return; }
+        if (not lw::load_value_if_any(request, delay_duration, led_data, "delay_duration")) { return; }
+        if (not lw::load_value_if_any(request, fade_duration, led_data, "fade_duration")) { return; }
 
         auto color = m_leds[index];
-        if (not WebUtils::load_value_if_any(request, color.red, led_data, "red")) { return; }
-        if (not WebUtils::load_value_if_any(request, color.green, led_data, "green")) { return; }
-        if (not WebUtils::load_value_if_any(request, color.blue, led_data, "blue")) { return; }
+        if (not lw::load_value_if_any(request, color.red, led_data, "red")) { return; }
+        if (not lw::load_value_if_any(request, color.green, led_data, "green")) { return; }
+        if (not lw::load_value_if_any(request, color.blue, led_data, "blue")) { return; }
 
         m_state_manager.set(
             index,
@@ -173,20 +173,20 @@ struct LedManager {
 
     void api_post_leds(AsyncWebServerRequest* request, JsonVariant& json) {
       if (not json.is<JsonObject>()) {
-        WebUtils::error(request, "Expected an object");
+        lw::error(request, "Expected an object");
         return;
       }
       auto&& data = json.as<JsonObject>();
 
       millis_t delay_duration = 0;
       millis_t fade_duration = 0;
-      if (not WebUtils::load_value_if_any(request, delay_duration, data, "delay_duration")) { return; }
-      if (not WebUtils::load_value_if_any(request, fade_duration, data, "fade_duration")) { return; }
+      if (not lw::load_value_if_any(request, delay_duration, data, "delay_duration")) { return; }
+      if (not lw::load_value_if_any(request, fade_duration, data, "fade_duration")) { return; }
 
       CRGB color;
-      if (not WebUtils::load_value(request, color.red, data, "red")) { return; }
-      if (not WebUtils::load_value(request, color.green, data, "green")) { return; }
-      if (not WebUtils::load_value(request, color.blue, data, "blue")) { return; }
+      if (not lw::load_value(request, color.red, data, "red")) { return; }
+      if (not lw::load_value(request, color.green, data, "green")) { return; }
+      if (not lw::load_value(request, color.blue, data, "blue")) { return; }
 
       m_state_manager.set(
           millis(), // current time
@@ -198,20 +198,20 @@ struct LedManager {
 
     void api_post_mode(AsyncWebServerRequest* request, JsonVariant& json) {
       if (not json.is<JsonObject>()) {
-        WebUtils::error(request, "Expected an object");
+        lw::error(request, "Expected an object");
         return;
       }
       auto&& data = json.as<JsonObject>();
 
       String name;
-      if (not WebUtils::load_value(request, name, data, "name")) { return; }
+      if (not lw::load_value(request, name, data, "name")) { return; }
 
       if (name == "IDLE") {
         set_mode_idle(request, data);
       } else if (name == "RANDOM") {
         set_mode_random(request, data);
       } else {
-        WebUtils::error(request, "Invalid mode");
+        lw::error(request, "Invalid mode");
       }
     }
 
@@ -222,18 +222,18 @@ struct LedManager {
 
     void api_post_brightness(AsyncWebServerRequest* request, JsonVariant& json) {
       if (not json.is<JsonObject>()) {
-        WebUtils::error(request, "Expected an object");
+        lw::error(request, "Expected an object");
         return;
       }
       auto&& data = json.as<JsonObject>();
 
       uint8_t brightness;
-      if (not WebUtils::load_value(request, brightness, data, "brightness")) { return; }
+      if (not lw::load_value(request, brightness, data, "brightness")) { return; }
 
       millis_t delay_duration = 0;
       millis_t fade_duration = 0;
-      if (not WebUtils::load_value_if_any(request, delay_duration, data, "delay_duration")) { return; }
-      if (not WebUtils::load_value_if_any(request, fade_duration, data, "fade_duration")) { return; }
+      if (not lw::load_value_if_any(request, delay_duration, data, "delay_duration")) { return; }
+      if (not lw::load_value_if_any(request, fade_duration, data, "fade_duration")) { return; }
 
       set_brightness(brightness, delay_duration, fade_duration);
 
@@ -252,13 +252,13 @@ struct LedManager {
       millis_t delay_duration = 0;
       millis_t fade_duration = 0;
 
-      if (not WebUtils::load_value(request, type, data, "type")) { return; }
-      if (not WebUtils::load_value_if_any(request, delay_duration, data, "delay_duration")) { return; }
-      if (not WebUtils::load_value_if_any(request, fade_duration, data, "fade_duration")) { return; }
+      if (not lw::load_value(request, type, data, "type")) { return; }
+      if (not lw::load_value_if_any(request, delay_duration, data, "delay_duration")) { return; }
+      if (not lw::load_value_if_any(request, fade_duration, data, "fade_duration")) { return; }
 
       RandomTypeEnum type_enum;
       if (not string_to_enum(type, type_enum)) {
-        WebUtils::error(request, "Invalid type for random mode");
+        lw::error(request, "Invalid type for random mode");
         return;
       }
 
