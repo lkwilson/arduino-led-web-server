@@ -1,8 +1,6 @@
 #pragma once
 
-#include <ESPAsyncWebServer.h>
-#include <AsyncJson.h>
-#include <ArduinoJson.h>
+#include <web_utils.h>
 #include <qr_util.h>
 
 #include "state_manager.h"
@@ -69,7 +67,7 @@ struct LedManager {
   public: // web api
 
     void api_get_led(AsyncWebServerRequest* request, size_t index) {
-      auto response = new AsyncJsonResponse();
+      auto response = PtrUtils::make_pointer_guard<AsyncJsonResponse>();
       auto&& response_json = response->getRoot().as<JsonObject>();
 
       if (index < NUM_LEDS) {
@@ -80,10 +78,9 @@ struct LedManager {
         response_json["blue"] = led.blue;
 
         response->setLength();
-        request->send(response);
+        request->send(response.release());
       } else {
-        error(request, "index out of bounds");
-        delete response; 
+        WebUtils::error(request, "index out of bounds");
       }
     }
  
@@ -127,7 +124,7 @@ struct LedManager {
         }
         default:
         {
-          error(request, "Unable to get current mode");
+          WebUtils::error(request, "Unable to get current mode");
           delete response;
           return;
         }
@@ -139,90 +136,42 @@ struct LedManager {
 
     void api_post_led(AsyncWebServerRequest* request, JsonVariant& json) {
       if (not json.is<JsonArray>()) {
-        error(request, "Expected an array");
+        WebUtils::error(request, "Expected an array");
         return;
       }
+      auto&& data = json.as<JsonArray>();
 
       const auto current_time = millis();
-
-      const auto& data = json.as<JsonArray>();
       for (const auto& led_data_variant : data) {
         if (not led_data_variant.is<JsonObject>()) {
-          error(request, "Expected objects within the array");
+          WebUtils::error(request, "Expected objects within the array");
           return;
         }
-        const auto& led_data = led_data_variant.as<JsonObject>();
+        auto&& led_data = led_data_variant.as<JsonObject>();
 
-        // Get index
-        if (not led_data.containsKey("index")) {
-          error(request, "index is required for each array entry");
-          return;
-        } else if (not led_data["index"].is<size_t>()) {
-          error(request, "invalid value for index");
-          return;
-        }
-        const auto index = led_data["index"].as<size_t>();
+        size_t index;
+        if (not WebUtils::load_value(request, index, led_data, "index")) { return; }
         if (index >= NUM_LEDS) {
-          error(request, "index is too large");
+          WebUtils::error(request, "index is too large");
           return;
         }
 
-        // Get delay and fade
         millis_t delay_duration = 0;
         millis_t fade_duration = 0;
+        if (not WebUtils::load_value_if_any(request, delay_duration, led_data, "delay_duration")) { return; }
+        if (not WebUtils::load_value_if_any(request, fade_duration, led_data, "fade_duration")) { return; }
 
-        if (led_data.containsKey("delay_duration")) {
-          if (not led_data["delay_duration"].is<millis_t>()) {
-            error(request, "Invalid value for delay_duration");
-            return;
-          }
+        auto color = m_leds[index];
+        if (not WebUtils::load_value_if_any(request, color.red, led_data, "red")) { return; }
+        if (not WebUtils::load_value_if_any(request, color.green, led_data, "green")) { return; }
+        if (not WebUtils::load_value_if_any(request, color.blue, led_data, "blue")) { return; }
 
-          delay_duration = led_data["delay_duration"].as<millis_t>();
-        }
-        if (led_data.containsKey("fade_duration")) {
-          if (not led_data["fade_duration"].is<millis_t>()) {
-            error(request, "Invalid value for fade_duration");
-            return;
-          }
-
-          fade_duration = led_data["fade_duration"].as<millis_t>();
-        }
-
-        // Update colors
-        const auto& led = m_leds[index];
-        auto red = led.r;
-        auto green = led.g;
-        auto blue = led.b;
-        if (led_data.containsKey("red")) {
-          if (not led_data["red"].is<uint8_t>()) {
-            error(request, "Invalid value for red");
-            return;
-          }
-
-          red = led_data["red"].as<uint8_t>();
-        }
-        if (led_data.containsKey("green")) {
-          if (not led_data["green"].is<uint8_t>()) {
-            error(request, "Invalid value for green");
-            return;
-          }
-
-          green = led_data["green"].as<uint8_t>();
-        }
-        if (led_data.containsKey("blue")) {
-          if (not led_data["blue"].is<uint8_t>()) {
-            error(request, "Invalid value for blue");
-            return;
-          }
-
-          blue = led_data["blue"].as<uint8_t>();
-        }
         m_state_manager.set(
             index,
             current_time,
             delay_duration,
             fade_duration,
-            CRGB(red, green, blue));
+            color);
       }
 
       request->send(200);
@@ -230,113 +179,57 @@ struct LedManager {
 
     void api_post_leds(AsyncWebServerRequest* request, JsonVariant& json) {
       if (not json.is<JsonObject>()) {
-        error(request, "Expected an object");
+        WebUtils::error(request, "Expected an object");
         return;
       }
+      auto&& data = json.as<JsonObject>();
 
-      const auto& data = json.as<JsonObject>();
-
-      const auto current_time = millis();
-      // Get delay and fade
       millis_t delay_duration = 0;
       millis_t fade_duration = 0;
+      if (not WebUtils::load_value_if_any(request, delay_duration, data, "delay_duration")) { return; }
+      if (not WebUtils::load_value_if_any(request, fade_duration, data, "fade_duration")) { return; }
 
-      if (data.containsKey("delay_duration")) {
-        if (not data["delay_duration"].is<millis_t>()) {
-          error(request, "Invalid value for delay_duration");
-          return;
-        }
-
-        delay_duration = data["delay_duration"].as<millis_t>();
-      }
-      if (data.containsKey("fade_duration")) {
-        if (not data["fade_duration"].is<millis_t>()) {
-          error(request, "Invalid value for fade_duration");
-          return;
-        }
-
-        fade_duration = data["fade_duration"].as<millis_t>();
-      }
-
-      if (not data.containsKey("red")) {
-        error(request, "red is required");
-        return;
-      } else if (not data["red"].is<uint8_t>()) {
-        error(request, "Invalid value for red");
-        return;
-      }
-      const auto red = data["red"].as<uint8_t>();
-
-      if (not data.containsKey("green")) {
-        error(request, "green is required");
-        return;
-      } else if (not data["green"].is<uint8_t>()) {
-        error(request, "Invalid value for green");
-        return;
-      }
-      const auto green = data["green"].as<uint8_t>();
-
-      if (not data.containsKey("blue")) {
-        error(request, "blue is required");
-        return;
-      } else if (not data["blue"].is<uint8_t>()) {
-        error(request, "Invalid value for blue");
-        return;
-      }
-      const auto blue = data["blue"].as<uint8_t>();
+      CRGB color;
+      if (not WebUtils::load_value(request, color.red, data, "red")) { return; }
+      if (not WebUtils::load_value(request, color.green, data, "green")) { return; }
+      if (not WebUtils::load_value(request, color.blue, data, "blue")) { return; }
 
       m_state_manager.set(
-          current_time,
+          millis(), // current time
           delay_duration,
           fade_duration,
-          CRGB(red, green, blue));
+          color);
       request->send(200);
     }
 
     void api_post_mode(AsyncWebServerRequest* request, JsonVariant& json) {
       if (not json.is<JsonObject>()) {
-        error(request, "Expected an object");
+        WebUtils::error(request, "Expected an object");
         return;
       }
+      auto&& data = json.as<JsonObject>();
 
-      const auto& data = json.as<JsonObject>();
+      String name;
+      if (not WebUtils::load_value(request, name, data, "name")) { return; }
 
-      if (not data.containsKey("name")) {
-        error(request, "name is required");
-        return;
-      } else if (not data["name"].is<String>()) {
-        error(request, "Invalid value for name");
-        return;
-      }
-
-      const auto name = data["name"].as<String>();
       if (name == "IDLE") {
         set_mode_idle(request, data);
       } else if (name == "RANDOM") {
         set_mode_random(request, data);
       } else {
-        error(request, "Invalid mode");
-        return;
+        WebUtils::error(request, "Invalid mode");
       }
     }
 
     void api_post_brightness(AsyncWebServerRequest* request, JsonVariant& json) {
       if (not json.is<JsonObject>()) {
-        error(request, "Expected an object");
+        WebUtils::error(request, "Expected an object");
         return;
       }
+      auto&& data = json.as<JsonObject>();
 
-      const auto& data = json.as<JsonObject>();
-
-      if (not data.containsKey("brightness")) {
-        error(request, "brightness is required");
-        return;
-      } else if (not data["brightness"].is<uint8_t>()) {
-        error(request, "Invalid value for brightness");
-        return;
-      }
-
-      const auto brightness = data["brightness"].as<uint8_t>();
+      uint8_t brightness;
+      if (not WebUtils::load_value(request, brightness, data, "brightness")) { return; }
       FastLED.setBrightness(brightness);
 
       request->send(200);
@@ -350,35 +243,13 @@ struct LedManager {
     }
 
     void set_mode_random(AsyncWebServerRequest* request, const JsonObject& data) {
-      if (not data.containsKey("type")) {
-        error(request, "type is required");
-        return;
-      } else if (not data["type"].is<String>()) {
-        error(request, "Invalid value for type");
-        return;
-      }
-      auto&& type = data["type"].as<String>();
-
-      // Get delay and fade
+      String type;
       millis_t delay_duration = 0;
       millis_t fade_duration = 0;
 
-      if (data.containsKey("delay_duration")) {
-        if (not data["delay_duration"].is<millis_t>()) {
-          error(request, "Invalid value for delay_duration");
-          return;
-        }
-
-        delay_duration = data["delay_duration"].as<millis_t>();
-      }
-      if (data.containsKey("fade_duration")) {
-        if (not data["fade_duration"].is<millis_t>()) {
-          error(request, "Invalid value for fade_duration");
-          return;
-        }
-
-        fade_duration = data["fade_duration"].as<millis_t>();
-      }
+      if (not WebUtils::load_value(request, type, data, "type")) { return; }
+      if (not WebUtils::load_value_if_any(request, delay_duration, data, "delay_duration")) { return; }
+      if (not WebUtils::load_value_if_any(request, fade_duration, data, "fade_duration")) { return; }
 
       // TODO: match apis and add brightness
       if (type == "UNIFORM") {
@@ -390,16 +261,10 @@ struct LedManager {
             delay_duration,
             fade_duration);
       } else {
-        error(request, "Invalid type for random mode");
+        WebUtils::error(request, "Invalid type for random mode");
         return;
       }
       request->send(200);
-    }
-
-    template<typename msg_t>
-    void error(AsyncWebServerRequest* request, msg_t&& msg) const {
-      // TODO: Support error codes
-      request->send(400, "text/plain", std::forward<msg_t>(msg));
     }
 
   private: // members
