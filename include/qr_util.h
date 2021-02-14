@@ -7,6 +7,8 @@ using millis_t = decltype(millis());
 
 namespace PtrUtils {
 
+// TODO: I think I can do:
+// operator T*() && { auto t = m_t; m_t = nullptr; return t; }
 template<typename T>
 struct PointerGuard {
   public: // ctors

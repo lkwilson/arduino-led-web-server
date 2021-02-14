@@ -10,9 +10,45 @@ enum class ColorStateEnum {
 
 enum class StateManagerEnum {
   IDLE,
-  UNIFORM_RANDOM,
-  EACH_RANDOM,
+  RANDOM,
 };
+
+String enum_to_string(const StateManagerEnum type) {
+  switch (type) {
+    case StateManagerEnum::IDLE: return "IDLE";
+    case StateManagerEnum::RANDOM: return "RANDOM";
+    default: return "UNKNOWN";
+  }
+}
+
+enum class RandomTypeEnum {
+  UNIFORM,
+  INDIVIDUAL,
+};
+
+String enum_to_string(const RandomTypeEnum type) {
+  switch (type) {
+    case RandomTypeEnum::UNIFORM: return "UNIFORM";
+    case RandomTypeEnum::INDIVIDUAL: return "INDIVIDUAL";
+    default: return "UNKNOWN";
+  }
+}
+
+bool string_to_enum(const String& str, RandomTypeEnum& value) {
+  if (str == "UNIFORM") {
+    value =  RandomTypeEnum::UNIFORM;
+    return true;
+  } else if (str == "INDIVIDUAL") {
+    value = RandomTypeEnum::INDIVIDUAL;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+uint8_t rand_color() {
+  return random(sizeof(uint8_t));
+}
 
 struct FollowState {
   void update(const millis_t current_time, CRGB& led)
@@ -94,27 +130,23 @@ struct ColorState {
   ColorState() : m_state(ColorStateEnum::IDLE) {}
 
   ColorStateEnum update(const millis_t current_time, CRGB& led) {
-    switch (m_state)
-    {
-      case ColorStateEnum::FADE:
-      {
+    switch (m_state) {
+      case ColorStateEnum::FADE: {
         const auto done = m_fade.update(current_time, led);
         if (done) {
           m_state = ColorStateEnum::IDLE;
         }
         break;
       }
-      case ColorStateEnum::FOLLOW:
-      {
+      case ColorStateEnum::FOLLOW: {
         m_follow.update(current_time, led);
         break;
       }
-      default:
-      {
-        Serial.println("Error: Invalid color state");
+      case ColorStateEnum::IDLE: {
+        break;
       }
-      case ColorStateEnum::IDLE:
-      {
+      default: {
+        Serial.println("Error: Invalid color state");
         break;
       }
     }
@@ -137,11 +169,64 @@ struct ColorState {
 };
 
 template<size_t NUM_LEDS>
+struct StateManager;
+
+template<size_t NUM_LEDS>
+struct RandomStateManager {
+  public:
+    RandomStateManager(StateManager<NUM_LEDS>& state_manager)
+    : m_state_manager(state_manager) {}
+
+    void set(const RandomTypeEnum type, const millis_t delay_duration, const millis_t fade_duration) {
+      m_type = type;
+      m_delay_duration = delay_duration;
+      m_fade_duration = fade_duration;
+    }
+
+    void update() {
+      const auto current_time = millis();
+      switch(m_type) {
+        case RandomTypeEnum::UNIFORM: {
+          CRGB rnd_color = CHSV(rand_color(), 255, 255);
+          m_state_manager.set(
+              current_time,
+              m_delay_duration,
+              m_fade_duration,
+              rnd_color);
+          break;
+        }
+        case RandomTypeEnum::INDIVIDUAL: {
+          for (size_t i = 0; i < NUM_LEDS; ++i) {
+            CRGB rnd_color = CHSV(rand_color(), 255, 255);
+            m_state_manager.set(
+                i,
+                current_time,
+                m_delay_duration,
+                m_fade_duration,
+                rnd_color);
+          }
+          break;
+        }
+      }
+    }
+
+  public: // accessors
+    RandomTypeEnum get_type() const { return m_type; }
+    millis_t get_delay_duration() const { return m_delay_duration; }
+    millis_t get_fade_duration() const { return m_fade_duration; }
+
+  private: // members
+    StateManager<NUM_LEDS>& m_state_manager;
+    RandomTypeEnum m_type;
+    millis_t m_delay_duration;
+    millis_t m_fade_duration;
+};
+
+template<size_t NUM_LEDS>
 struct StateManager {
   public: // ctors
     StateManager(array_t<CRGB, NUM_LEDS>& leds)
-    : m_state(StateManagerEnum::IDLE), m_leds(leds), m_states()
-    {}
+    : m_state(StateManagerEnum::IDLE), m_leds(leds), m_states(), m_random_state_manager(*this) {}
 
   public: // api
     void set(
@@ -163,8 +248,7 @@ struct StateManager {
         const millis_t delay_duration,
         const millis_t fade_duration,
         const CRGB color) {
-      for (size_t i = 0; i < NUM_LEDS; ++i)
-      {
+      for (size_t i = 0; i < NUM_LEDS; ++i) {
         set(
             i,
             current_time,
@@ -177,62 +261,27 @@ struct StateManager {
     void update() {
       const auto current_time = millis();
       bool any_active = false;
-      for (size_t i = 0; i < NUM_LEDS; ++i)
-      {
+      for (size_t i = 0; i < NUM_LEDS; ++i) {
         const auto state = m_states[i].update(current_time, m_leds[i]);
-        if (state != ColorStateEnum::IDLE) {
-          any_active = true;
-        }
+        any_active = any_active or state != ColorStateEnum::IDLE;
       }
-      if (!any_active) {
+      if (not any_active) {
         switch (m_state) {
-          case StateManagerEnum::UNIFORM_RANDOM:
-          {
-            CRGB rnd_color = CHSV(rand_color(), 255, 255);
-            set(
-                millis(),
-                m_random_delay_duration,
-                m_random_fade_duration,
-                rnd_color);
+          case StateManagerEnum::RANDOM: {
+            m_random_state_manager.update();
             break;
           }
-          case StateManagerEnum::EACH_RANDOM:
-          {
-            const auto current_time = millis();
-            for (size_t i = 0; i < NUM_LEDS; ++i)
-            {
-              CRGB rnd_color = CHSV(rand_color(), 255, 255);
-              set(
-                  i,
-                  current_time,
-                  m_random_delay_duration,
-                  m_random_fade_duration,
-                  rnd_color);
-            }
-            break;
-          }
-          case StateManagerEnum::IDLE:
-          {
-            // Do nothing since idling
-          }
-          default:
-          {
+          default: {
+            // do nothing since idling
             break;
           }
         }
       }
     }
 
-    void start_uniform_random_fade_loop(const millis_t delay_duration, const millis_t fade_duration) {
-      m_state = StateManagerEnum::UNIFORM_RANDOM;
-      m_random_delay_duration = delay_duration;
-      m_random_fade_duration = fade_duration;
-    }
-
-    void start_each_random_fade_loop(const millis_t delay_duration, const millis_t fade_duration) {
-      m_state = StateManagerEnum::EACH_RANDOM;
-      m_random_delay_duration = delay_duration;
-      m_random_fade_duration = fade_duration;
+    void set_random_state(const RandomTypeEnum type, const millis_t delay_duration, const millis_t fade_duration) {
+      m_state = StateManagerEnum::RANDOM;
+      m_random_state_manager.set(type, delay_duration, fade_duration);
     }
 
     void set_idle_state() {
@@ -243,9 +292,8 @@ struct StateManager {
       return m_state;
     }
 
-  private: // helper methods
-    uint8_t rand_color() {
-      return random(256);
+    RandomStateManager<NUM_LEDS> get_random_state_manager() const {
+      return m_random_state_manager;
     }
 
   private: // members
@@ -253,7 +301,6 @@ struct StateManager {
     array_t<CRGB, NUM_LEDS>& m_leds;
     array_t<ColorState, NUM_LEDS> m_states;
 
-    // state members
-    millis_t m_random_delay_duration;
-    millis_t m_random_fade_duration;
+    // random state members
+    RandomStateManager<NUM_LEDS> m_random_state_manager;
 };

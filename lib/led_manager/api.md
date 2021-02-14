@@ -136,8 +136,8 @@ Note
 
 Where
 * `value` is an integer in [0, 256)
-* `delay` is the duration in ms before starting the change and defaults to 0
-* `fade` is the duration in ms of the transition time and defaults to 0
+* `delay_duration` is the duration in ms before starting the change and defaults to 0
+* `fade_duration` is the duration in ms of the transition time and defaults to 0
 
 ### `POST /mode`
 
@@ -158,11 +158,15 @@ Where
 ```
 {
   brightness: brightness
+  delay_duration: delay_duration = 0,
+  fade_duration: fade_duration = 0,
 }
 ```
 
 Where
 * `brightness` is an integer from 0 through 255
+* `delay_duration` is the duration in ms before starting the change and defaults to 0
+* `fade_duration` is the duration in ms of the transition time and defaults to 0
 
 # Future
 

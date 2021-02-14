@@ -24,31 +24,6 @@ struct LedManager {
     void add_handles(AsyncWebServer& server) {
       Serial.println("Adding handles for LedManager");
 
-      // POST REQUESTS
-      server.addHandler(new AsyncCallbackJsonWebHandler(
-          "/api/led",
-          [this](AsyncWebServerRequest *request, JsonVariant &json) {
-            this->api_post_led(request, json);
-          }));
-
-      server.addHandler(new AsyncCallbackJsonWebHandler(
-          "/api/leds",
-          [this](AsyncWebServerRequest *request, JsonVariant &json) {
-            this->api_post_leds(request, json);
-          }));
-
-      server.addHandler(new AsyncCallbackJsonWebHandler(
-          "/api/brightness",
-          [this](AsyncWebServerRequest *request, JsonVariant &json) {
-            this->api_post_brightness(request, json);
-          }));
-
-      server.addHandler(new AsyncCallbackJsonWebHandler(
-          "/api/mode",
-          [this](AsyncWebServerRequest *request, JsonVariant &json) {
-            this->api_post_mode(request, json);
-          }));
-
       // GET REQUESTS
       server.on("/api/led", HTTP_GET, [this](AsyncWebServerRequest* request) {
         if (request->hasParam("index")) {
@@ -62,6 +37,31 @@ struct LedManager {
       server.on("/api/mode", HTTP_GET, [this](AsyncWebServerRequest* request) {
         this->api_get_mode(request);
       });
+
+      // POST REQUESTS
+      server.addHandler(new AsyncCallbackJsonWebHandler(
+          "/api/led",
+          [this](AsyncWebServerRequest* request, JsonVariant& json) {
+            this->api_post_led(request, json);
+          }));
+
+      server.addHandler(new AsyncCallbackJsonWebHandler(
+          "/api/leds",
+          [this](AsyncWebServerRequest* request, JsonVariant& json) {
+            this->api_post_leds(request, json);
+          }));
+
+      server.addHandler(new AsyncCallbackJsonWebHandler(
+          "/api/brightness",
+          [this](AsyncWebServerRequest* request, JsonVariant& json) {
+            this->api_post_brightness(request, json);
+          }));
+
+      server.addHandler(new AsyncCallbackJsonWebHandler(
+          "/api/mode",
+          [this](AsyncWebServerRequest* request, JsonVariant& json) {
+            this->api_post_mode(request, json);
+          }));
     }
 
   public: // web api
@@ -85,7 +85,7 @@ struct LedManager {
     }
  
     void api_get_led(AsyncWebServerRequest* request) {
-      auto response = new AsyncJsonResponse(true /*is array*/);
+      auto response = PtrUtils::make_pointer_guard<AsyncJsonResponse>(true /*is array*/);
       auto&& root = response->getRoot();
 
       for (size_t i = 0; i < NUM_LEDS; ++i) {
@@ -98,40 +98,34 @@ struct LedManager {
       }
 
       response->setLength();
-      request->send(response);
+      request->send(response.release());
     }
 
     void api_get_mode(AsyncWebServerRequest* request) {
-      auto response = new AsyncJsonResponse();
+      auto response = PtrUtils::make_pointer_guard<AsyncJsonResponse>();
       auto&& root = response->getRoot().as<JsonObject>();
 
       const auto& state = m_state_manager.get_state();
+      root["name"] = enum_to_string(state);
       switch (state) {
-        case StateManagerEnum::IDLE:
-        {
-          root["type"] = "IDLE";
+        case StateManagerEnum::IDLE: {
           break;
         }
-        case StateManagerEnum::UNIFORM_RANDOM:
-        case StateManagerEnum::EACH_RANDOM:
-        {
-          root["type"] = "RANDOM";
-          // TODO: Build out the random framework
-          // max_brightness: max_brightness,
-          // delay_duration: delay_duration,
-          // fade_duration: fade_duration,
+        case StateManagerEnum::RANDOM: {
+          auto random_state_manager = m_state_manager.get_random_state_manager();
+          root["type"] = enum_to_string(random_state_manager.get_type());
+          root["delay_duration"] = random_state_manager.get_delay_duration();
+          root["fade_duration"] = random_state_manager.get_fade_duration();
           break;
         }
-        default:
-        {
+        default: {
           WebUtils::error(request, "Unable to get current mode");
-          delete response;
           return;
         }
       }
 
       response->setLength();
-      request->send(response);
+      request->send(response.release());
     }
 
     void api_post_led(AsyncWebServerRequest* request, JsonVariant& json) {
@@ -221,6 +215,11 @@ struct LedManager {
       }
     }
 
+    void set_brightness(uint8_t brightness, millis_t, millis_t) {
+      // TODO fade brightness
+      FastLED.setBrightness(brightness);
+    }
+
     void api_post_brightness(AsyncWebServerRequest* request, JsonVariant& json) {
       if (not json.is<JsonObject>()) {
         WebUtils::error(request, "Expected an object");
@@ -230,7 +229,13 @@ struct LedManager {
 
       uint8_t brightness;
       if (not WebUtils::load_value(request, brightness, data, "brightness")) { return; }
-      FastLED.setBrightness(brightness);
+
+      millis_t delay_duration = 0;
+      millis_t fade_duration = 0;
+      if (not WebUtils::load_value_if_any(request, delay_duration, data, "delay_duration")) { return; }
+      if (not WebUtils::load_value_if_any(request, fade_duration, data, "fade_duration")) { return; }
+
+      set_brightness(brightness, delay_duration, fade_duration);
 
       request->send(200);
     }
@@ -251,19 +256,16 @@ struct LedManager {
       if (not WebUtils::load_value_if_any(request, delay_duration, data, "delay_duration")) { return; }
       if (not WebUtils::load_value_if_any(request, fade_duration, data, "fade_duration")) { return; }
 
-      // TODO: match apis and add brightness
-      if (type == "UNIFORM") {
-        m_state_manager.start_uniform_random_fade_loop(
-            delay_duration,
-            fade_duration);
-      } else if (type == "INDIVIDUAL") {
-        m_state_manager.start_each_random_fade_loop(
-            delay_duration,
-            fade_duration);
-      } else {
+      RandomTypeEnum type_enum;
+      if (not string_to_enum(type, type_enum)) {
         WebUtils::error(request, "Invalid type for random mode");
         return;
       }
+
+      m_state_manager.set_random_state(
+          type_enum,
+          delay_duration,
+          fade_duration);
       request->send(200);
     }
 
