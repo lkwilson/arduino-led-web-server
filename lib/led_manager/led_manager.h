@@ -215,9 +215,8 @@ struct LedManager {
       }
     }
 
-    void set_brightness(uint8_t brightness, millis_t, millis_t) {
-      // TODO fade brightness
-      FastLED.setBrightness(brightness);
+    void set_brightness(const millis_t current_time, const millis_t delay_duration, const millis_t fade_duration, const uint8_t brightness) {
+      m_state_manager.set_brightness(current_time, delay_duration, fade_duration, brightness);
     }
 
     void api_post_brightness(AsyncWebServerRequest* request, JsonVariant& json) {
@@ -235,7 +234,7 @@ struct LedManager {
       if (not lw::load_value_if_any(request, delay_duration, data, "delay_duration")) { return; }
       if (not lw::load_value_if_any(request, fade_duration, data, "fade_duration")) { return; }
 
-      set_brightness(brightness, delay_duration, fade_duration);
+      set_brightness(millis(), delay_duration, fade_duration, brightness);
 
       request->send(200);
     }

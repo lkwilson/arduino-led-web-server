@@ -77,7 +77,7 @@ struct FadeLogic {
   int m_offset;
 };
 
-struct FadeState {
+struct FadeColorState {
   void set(
       const millis_t init_time,
       const millis_t delay_duration,
@@ -163,13 +163,148 @@ struct ColorState {
     m_fade.set(init_time, delay_duration, fade_duration, led, target_color);
   }
 
-  FadeState m_fade;
+  FadeColorState m_fade;
   FollowState m_follow;
   ColorStateEnum m_state;
 };
 
 template<size_t NUM_LEDS>
-struct StateManager;
+struct RandomStateManager;
+
+struct BrightnessStateManager {
+  public: // api
+    void set(
+        const millis_t init_time,
+        const millis_t delay_duration,
+        const millis_t fade_duration,
+        const uint8_t target_brightness)
+    {
+      m_init_time = init_time;
+      m_delay_duration = delay_duration;
+      m_fade_duration = fade_duration;
+      m_fader.set(FastLED.getBrightness(), target_brightness);
+      m_active = true;
+    }
+
+    // returns true when done
+    void update(const millis_t current_time) {
+      if (not m_active) {
+        return;
+      }
+      const auto delay_interval = current_time - m_init_time;
+      const auto fade_interval = delay_interval - m_delay_duration;
+      if (delay_interval <= m_delay_duration) {
+        // Do nothing
+      } else if (fade_interval < m_fade_duration) {
+        // 0 < fade_interval < m_fade_duration
+        const auto progress = static_cast<double>(fade_interval) / m_fade_duration;
+        FastLED.setBrightness(m_fader.get(progress));
+      } else {
+        FastLED.setBrightness(m_fader.get_end());
+        m_active = false;
+      }
+    }
+
+  private: // members
+    bool m_active;
+    FadeLogic m_fader;
+    millis_t m_init_time;
+    millis_t m_delay_duration;
+    millis_t m_fade_duration;
+};
+
+
+template<size_t NUM_LEDS>
+struct StateManager {
+  public: // ctors
+    StateManager(array_t<CRGB, NUM_LEDS>& leds)
+    : m_state(StateManagerEnum::IDLE), m_leds(leds), m_states(), m_random_state_manager(*this) {}
+
+  public: // api
+    void set(
+        const size_t i,
+        const millis_t current_time,
+        const millis_t delay_duration,
+        const millis_t fade_duration,
+        const CRGB color) {
+      m_states[i].start_fade_state(
+          current_time,
+          delay_duration,
+          fade_duration,
+          m_leds[i],
+          color);
+    }
+
+    void set(
+        const millis_t current_time,
+        const millis_t delay_duration,
+        const millis_t fade_duration,
+        const CRGB color) {
+      for (size_t i = 0; i < NUM_LEDS; ++i) {
+        set(
+            i,
+            current_time,
+            delay_duration,
+            fade_duration,
+            color);
+      }
+    }
+
+    void update() {
+      const auto current_time = millis();
+
+      m_brightness_state_manager.update(current_time);
+      bool any_active = false;
+      for (size_t i = 0; i < NUM_LEDS; ++i) {
+        const auto state = m_states[i].update(current_time, m_leds[i]);
+        any_active = any_active or state != ColorStateEnum::IDLE;
+      }
+      if (not any_active) {
+        switch (m_state) {
+          case StateManagerEnum::RANDOM: {
+            m_random_state_manager.update();
+            break;
+          }
+          default: {
+            // do nothing since idling
+            break;
+          }
+        }
+      }
+    }
+
+    void set_brightness(const millis_t current_time, const millis_t delay_duration, const millis_t fade_duration, const uint8_t brightness) {
+      m_brightness_state_manager.set(current_time, delay_duration, fade_duration, brightness);
+    }
+
+    void set_random_state(const RandomTypeEnum type, const millis_t delay_duration, const millis_t fade_duration) {
+      m_state = StateManagerEnum::RANDOM;
+      m_random_state_manager.set(type, delay_duration, fade_duration);
+    }
+
+    void set_idle_state() {
+      m_state = StateManagerEnum::IDLE;
+    }
+
+    StateManagerEnum get_state() const {
+      return m_state;
+    }
+
+    RandomStateManager<NUM_LEDS> get_random_state_manager() const {
+      return m_random_state_manager;
+    }
+
+  private: // members
+    StateManagerEnum m_state;
+    array_t<CRGB, NUM_LEDS>& m_leds;
+    array_t<ColorState, NUM_LEDS> m_states;
+
+    // brightness state manager
+    BrightnessStateManager m_brightness_state_manager;
+
+    // random state manager
+    RandomStateManager<NUM_LEDS> m_random_state_manager;
+};
 
 template<size_t NUM_LEDS>
 struct RandomStateManager {
@@ -220,87 +355,4 @@ struct RandomStateManager {
     RandomTypeEnum m_type;
     millis_t m_delay_duration;
     millis_t m_fade_duration;
-};
-
-template<size_t NUM_LEDS>
-struct StateManager {
-  public: // ctors
-    StateManager(array_t<CRGB, NUM_LEDS>& leds)
-    : m_state(StateManagerEnum::IDLE), m_leds(leds), m_states(), m_random_state_manager(*this) {}
-
-  public: // api
-    void set(
-        const size_t i,
-        const millis_t current_time,
-        const millis_t delay_duration,
-        const millis_t fade_duration,
-        const CRGB color) {
-      m_states[i].start_fade_state(
-          current_time,
-          delay_duration,
-          fade_duration,
-          m_leds[i],
-          color);
-    }
-
-    void set(
-        const millis_t current_time,
-        const millis_t delay_duration,
-        const millis_t fade_duration,
-        const CRGB color) {
-      for (size_t i = 0; i < NUM_LEDS; ++i) {
-        set(
-            i,
-            current_time,
-            delay_duration,
-            fade_duration,
-            color);
-      }
-    }
-
-    void update() {
-      const auto current_time = millis();
-      bool any_active = false;
-      for (size_t i = 0; i < NUM_LEDS; ++i) {
-        const auto state = m_states[i].update(current_time, m_leds[i]);
-        any_active = any_active or state != ColorStateEnum::IDLE;
-      }
-      if (not any_active) {
-        switch (m_state) {
-          case StateManagerEnum::RANDOM: {
-            m_random_state_manager.update();
-            break;
-          }
-          default: {
-            // do nothing since idling
-            break;
-          }
-        }
-      }
-    }
-
-    void set_random_state(const RandomTypeEnum type, const millis_t delay_duration, const millis_t fade_duration) {
-      m_state = StateManagerEnum::RANDOM;
-      m_random_state_manager.set(type, delay_duration, fade_duration);
-    }
-
-    void set_idle_state() {
-      m_state = StateManagerEnum::IDLE;
-    }
-
-    StateManagerEnum get_state() const {
-      return m_state;
-    }
-
-    RandomStateManager<NUM_LEDS> get_random_state_manager() const {
-      return m_random_state_manager;
-    }
-
-  private: // members
-    StateManagerEnum m_state;
-    array_t<CRGB, NUM_LEDS>& m_leds;
-    array_t<ColorState, NUM_LEDS> m_states;
-
-    // random state members
-    RandomStateManager<NUM_LEDS> m_random_state_manager;
 };
