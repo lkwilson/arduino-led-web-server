@@ -1,0 +1,17 @@
+.mode-form {
+  margin: 1rem;
+  justify-content: space-evenly;
+}
+
+.mode-card {
+  border-radius: 5px;
+  box-shadow: 0 3px 10px grey;
+  margin: .5rem;
+  padding: .5rem;
+}
+
+.update-button {
+  padding: 1rem;
+  margin: 1rem;
+  width: 100%;
+}

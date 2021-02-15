@@ -8,21 +8,7 @@
   font-family: Helvetica, sans-serif;
 }
 
-body {
+#root {
   margin: 1rem;
   text-align: center;
-}
-
-.ctrl {
-  margin: 1em;
-}
-
-.ctrl-input {
-  width: 100%;
-  margin: .5rem;
-}
-
-.ctrl-color {
-  width: 10%;
-  margin: .5rem;
 }
