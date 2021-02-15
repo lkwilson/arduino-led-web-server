@@ -34,6 +34,10 @@ struct LedManager {
         }
       });
 
+      server.on("/api/brightness", HTTP_GET, [this](AsyncWebServerRequest* request) {
+        this->api_get_brightness(request);
+      });
+
       server.on("/api/mode", HTTP_GET, [this](AsyncWebServerRequest* request) {
         this->api_get_mode(request);
       });
@@ -65,8 +69,7 @@ struct LedManager {
     }
 
   public: // web api
-
-    void api_get_led(AsyncWebServerRequest* request, size_t index) {
+    void api_get_led(AsyncWebServerRequest* request, size_t index) const {
       auto response = lw::make_ptr<AsyncJsonResponse>();
       auto&& response_json = response->getRoot().as<JsonObject>();
 
@@ -84,7 +87,7 @@ struct LedManager {
       }
     }
  
-    void api_get_led(AsyncWebServerRequest* request) {
+    void api_get_led(AsyncWebServerRequest* request) const {
       auto response = lw::make_ptr<AsyncJsonResponse>(true /*is array*/);
       auto&& root = response->getRoot();
 
@@ -101,7 +104,7 @@ struct LedManager {
       request->send(response.release());
     }
 
-    void api_get_mode(AsyncWebServerRequest* request) {
+    void api_get_mode(AsyncWebServerRequest* request) const {
       auto response = lw::make_ptr<AsyncJsonResponse>();
       auto&& root = response->getRoot().as<JsonObject>();
 
@@ -123,6 +126,16 @@ struct LedManager {
           return;
         }
       }
+
+      response->setLength();
+      request->send(response.release());
+    }
+
+    void api_get_brightness(AsyncWebServerRequest* request) const {
+      auto response = lw::make_ptr<AsyncJsonResponse>();
+      auto&& root = response->getRoot().as<JsonObject>();
+
+      root["brightness"] = m_state_manager.get_brightness();
 
       response->setLength();
       request->send(response.release());

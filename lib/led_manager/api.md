@@ -81,7 +81,7 @@ Where
 Returns
 ```
 {
-  mode: name
+  name: name
   config_key: config_value,
   ...
 }
@@ -90,6 +90,15 @@ Returns
 Where
 * `name` is "IDLE", "UNIFORM_RANDOM", or "EACH_RANDOM"
 * `config_key` and `config_value` are the mode's settings (See Modes section)
+
+### `GET /brightness`
+
+Returns
+```
+{
+  brightness: value,
+}
+```
 
 ## POST
 
@@ -153,7 +162,7 @@ Where
 * `name` is "IDLE", "UNIFORM_RANDOM", or "EACH_RANDOM"
 * `config_key` and `config_value` are the mode's settings (See Modes section)
 
-### `POST /brightness
+### `POST /brightness`
 
 ```
 {

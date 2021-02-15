@@ -173,6 +173,10 @@ struct RandomStateManager;
 
 struct BrightnessStateManager {
   public: // api
+    uint8_t get() const {
+      return FastLED.getBrightness();
+    }
+
     void set(
         const millis_t init_time,
         const millis_t delay_duration,
@@ -275,6 +279,10 @@ struct StateManager {
 
     void set_brightness(const millis_t current_time, const millis_t delay_duration, const millis_t fade_duration, const uint8_t brightness) {
       m_brightness_state_manager.set(current_time, delay_duration, fade_duration, brightness);
+    }
+
+    uint8_t get_brightness() const {
+      return m_brightness_state_manager.get();
     }
 
     void set_random_state(const RandomTypeEnum type, const millis_t delay_duration, const millis_t fade_duration) {
