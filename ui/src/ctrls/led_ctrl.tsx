@@ -1,21 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { unwrap, unwrap_num, rgb_to_hex, hex_to_rgb } from '../utils/utils';
 import Pickr from '@simonwep/pickr';
-import '@simonwep/pickr/dist/themes/monolith.min.css';
+import '@simonwep/pickr/dist/themes/classic.min.css';
 
-function LedCtrl() {
-  const [red, set_red] = useState(0);
-  const [green, set_green] = useState(0);
-  const [blue, set_blue] = useState(0);
-  const [brightness, set_brightness] = useState(255);
-  const [delay_duration, set_delay_duration ] = useState("");
-  const [fade_duration, set_fade_duration ] = useState("");
-
+function ColorPickrWrapper(props) {
+  const { color, set_color } = props;
   const pickr_ref = useRef(null);
+
+  // Mount color picker
   useEffect(_ => {
+    const { red, green, blue } = color;
+    const default_color = `rgb(${[red, green, blue].join(', ')})`;
+
+    // Add color pickr to dom
     const pickr = Pickr.create({
       el: "#advanced_color_picker",
-      theme: "monolith",
+      theme: "classic",
+      inline: true,
+      default: default_color, 
       swatches: [
         'rgb(244, 67, 54)',
         'rgb(233, 30, 99)',
@@ -39,34 +41,70 @@ function LedCtrl() {
     });
     pickr_ref.current = pickr;
 
-    pickr.on('change', color => {
-      const rgba = color.toRGBA();
-      rgba.splice(3);
-      const [ red, green, blue ] = rgba.map(Math.floor);
-
-      set_red(red);
-      set_green(green);
-      set_blue(blue);
+    // On color update, set color
+    pickr.on('change', _ => pickr.applyColor());
+    pickr.on('save', color => {
+      if (color != null) {
+        const [ red, green, blue, _ ] = color.toRGBA();
+        set_color({ red, green, blue });
+      }
     });
 
+    // Remove pickr from dom
     return _ => pickr.destroyAndRemove();
   }, []);
 
-  function set_display_color(hex_color) {
-    console.log({hex_color})
-    const color = hex_to_rgb(hex_color);
-
-    if (color == null) {
+  useEffect(_ => {
+    const pickr = pickr_ref.current;
+    if (pickr == null) {
       return;
     }
 
     const { red, green, blue } = color;
-    set_red(red);
-    set_green(green);
-    set_blue(blue);
+    const [ current_red, current_green, current_blue ] = pickr.getColor().toRGBA();
+    const red_changed = red !== current_red;
+    const green_changed = green !== current_green;
+    const blue_changed = blue !== current_blue;
+    if (red_changed || green_changed || blue_changed) {
+      const new_color = `rgb(${[red, green, blue].join(', ')})`;
+      pickr.setColor(new_color);
+    }
+  }, [color]);
+
+  return (
+    <div className="container-column" style={{alignItems: "center"}}>
+      <div id="advanced_color_picker" />
+    </div>
+  );
+}
+
+function LedCtrl() {
+  const [color, set_color] = useState({ red: 0, green: 0, blue: 0 });
+  const [brightness, set_brightness] = useState(255);
+  const [delay_duration, set_delay_duration ] = useState("");
+  const [fade_duration, set_fade_duration ] = useState("");
+
+  const int_color = {
+    red: Math.round(color.red),
+    green: Math.round(color.green),
+    blue: Math.round(color.blue),
+  };
+  const set_red = red => set_color({ ...int_color, red });
+  const set_green = green => set_color({ ...int_color, green });
+  const set_blue = blue => set_color({ ...int_color, blue });
+
+  function set_display_color(hex_color) {
+    const rgb_color = hex_to_rgb(hex_color);
+
+    if (rgb_color == null) {
+      return;
+    }
+
+    set_color(rgb_color);
   }
 
-  const hex_value = rgb_to_hex({ red, green, blue });
+  const { red, green, blue } = int_color;
+  const hex_value = rgb_to_hex(int_color);
   return (
     <div className="container-column">
       <h1 className="section-title">Lights</h1>
@@ -101,7 +139,7 @@ function LedCtrl() {
           <input type="number" placeholder="0" name="led_fade_duration" id="led_fade_duration" value={fade_duration} onChange={unwrap_num(set_fade_duration)}/>
           ms
         </label>
-        <div id="advanced_color_picker" />
+        <ColorPickrWrapper color={color} set_color={set_color} />
       </div>
     </div>
   );
