@@ -11,7 +11,7 @@ function ModeCtrl() {
   const [ random_fade_duration, set_random_fade_duration ] = useState("");
 
   useEffect(() => {
-    console.log("Fetching mode");
+    // TODO: Fetch mode
     let loader = null;
     loader = setTimeout(_ => {
       loader = null;
