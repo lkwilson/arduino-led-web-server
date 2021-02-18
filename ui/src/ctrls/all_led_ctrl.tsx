@@ -7,7 +7,12 @@ function AllLeds() {
     // Load from API
   }, []);
 
-  return (<h1>Coming soon!</h1>);
+  return (
+    <div className="container-column">
+      <h1 className="section-title">All Lights</h1>
+      <p>Coming soon!</p>
+    </div>
+  );
 }
 
 export {

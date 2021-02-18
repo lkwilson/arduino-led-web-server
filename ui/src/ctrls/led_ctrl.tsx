@@ -54,23 +54,27 @@ function LedCtrl() {
       <h1 className="section-title">Lights</h1>
       <div className="container-column mode-form">
         <div>
-          Color: {hex_value}
-          <input type="color" name="color_display" id="color_display" value={hex_value} onChange={unwrap(set_display_color)}/>
+          {hex_value.toUpperCase()}
+          <ColorPickrWrapper color={color} set_color={set_color} />
         </div>
         <label htmlFor="red_slider">
-          Red: {red} {red.toString(16)}
+          Red: {red} (0x{red.toString(16).toUpperCase()})
+          <br />
           <input type="range" min="0" max="255" name="red_slider" id="red_slider" value={red} onChange={unwrap_num(set_red)} />
         </label>
         <label htmlFor="green">
-          Green: {green} {green.toString(16)}
+          Green: {green} (0x{green.toString(16).toUpperCase()})
+          <br />
           <input type="range" min="0" max="255" name="green" id="green" value={green} onChange={unwrap_num(set_green)} />
         </label>
         <label htmlFor="blue">
-          Blue: {blue} {blue.toString(16)}
+          Blue: {blue} (0x{blue.toString(16).toUpperCase()})
+          <br />
           <input type="range" min="0" max="255" name="blue" id="blue" value={blue} onChange={unwrap_num(set_blue)} />
         </label>
         <label htmlFor="brightness">
-          Brightness: {brightness} {Math.round(brightness / 255 * 100)}%
+          Brightness: {brightness} ({Math.round(brightness / 255 * 100)}%)
+          <br />
           <input type="range" min="0" max="255" name="brightness" id="brightness" value={brightness} onChange={unwrap_num(set_brightness)} />
         </label>
         <label htmlFor="led_delay_duration">
@@ -83,7 +87,11 @@ function LedCtrl() {
           <input type="number" placeholder="0" name="led_fade_duration" id="led_fade_duration" value={fade_duration} onChange={unwrap(set_fade)}/>
           ms
         </label>
-        <ColorPickrWrapper color={color} set_color={set_color} />
+        <div>
+          Native Pickr:
+          <br/>
+          <input type="color" name="color_display" id="color_display" value={hex_value} onChange={unwrap(set_display_color)}/>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
 import Pickr from '@simonwep/pickr';
-import '@simonwep/pickr/dist/themes/classic.min.css';
+import '@simonwep/pickr/dist/themes/monolith.min.css';
 
 function ColorPickrWrapper(props) {
   const { color, set_color } = props;
@@ -15,9 +15,11 @@ function ColorPickrWrapper(props) {
     // Add color pickr to dom
     const pickr = Pickr.create({
       el: "#advanced_color_picker",
-      theme: "classic",
+      theme: "monolith",
       inline: true,
       default: default_color, 
+      showAlways: true,
+      //position: 'top-middle',
       swatches: [
         'rgb(244, 67, 54)',
         'rgb(233, 30, 99)',
@@ -35,7 +37,7 @@ function ColorPickrWrapper(props) {
         'rgb(255, 193, 7)',
       ],
       components: {
-        preview: false,
+        preview: true,
         hue: true,
       }
     });
