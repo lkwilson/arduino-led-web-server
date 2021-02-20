@@ -12,8 +12,21 @@
 
 .section-title {
   border-bottom: 1px black solid;
+  margin-bottom: 1rem;
 }
 
 .form-align {
   align-items: flex-start;
+}
+
+.flex-grow-1 {
+  flex-grow: 1;
+}
+
+.justify-space-evenly {
+  justify-content: space-evenly;
+}
+
+.justify-center {
+  justify-content: center;
 }

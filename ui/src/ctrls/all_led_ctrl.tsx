@@ -7,28 +7,27 @@ function AllLeds(props) {
   const { set_color } = props;
   const leds = useContext(LedsContext);
 
-  function handle_led_selected(index) {
+  function handle_led_selected(event, index) {
+    event.preventDefault();
     const { red, green, blue } = leds[index];
     set_color({ red, green, blue });
   }
 
   let display_leds = null;
   if (leds != null && leds.length !== 0) {
-    display_leds = leds.map(led => {
-      const { index, red, green, blue } = led;
+    display_leds = leds.map((led, index) => {
+      const { red, green, blue } = led;
       const hex_color = rgb_to_hex({red, green, blue});
       const key = `led_number_${index}`;
-      const style = {
-        background: hex_color,
-        borderRadius: "1px",
-      }
 
       return (
-        <div
-            key={key}
-            style={style}
-            onClick={_ => handle_led_selected(index)} >
-          Led #{index}
+        <div key={key} onClick={event => handle_led_selected(event, index)}>
+          <div>{hex_color.toUpperCase()}</div>
+          <input
+              type="color"
+              value={hex_color}
+              disabled
+              />
         </div>
       );
     });
@@ -38,8 +37,9 @@ function AllLeds(props) {
   return (
     <div className="container-column">
       <h1 className="section-title">All Lights</h1>
-      <p>Coming soon!</p>
-      {display_leds}
+      <div className="container-row justify-space-evenly">
+        {display_leds == null ? "Loading..." : display_leds}
+      </div>
     </div>
   );
 }

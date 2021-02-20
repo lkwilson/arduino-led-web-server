@@ -1,0 +1,7 @@
+.input-row {
+  justify-content: space-evenly;
+}
+
+.led-form > * {
+  margin-bottom: 1rem;
+}

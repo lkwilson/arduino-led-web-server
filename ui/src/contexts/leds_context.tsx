@@ -3,31 +3,24 @@ import { createContext, useState, useEffect } from 'react';
 
 const LedsContext = createContext(null);
 
-function LedsContextProvider({ children }) {
+function LedsContextProvider(props) {
+  const { children } = props;
   const [leds, set_leds] = useState([]);
 
   // load state
   useEffect(_ => {
-    let timer = null;
-    timer = setTimeout(_ => {
-      const new_leds = [
-        {
-          index: 0,
-          red: 10,
-          green: 20,
-          blue: 30,
-        }
-      ];
-      set_leds(new_leds);
-
-      timer = null;
-    }, 1000);
-
-    return _ => {
-      if (timer != null) {
-        clearTimeout(timer);
+    const new_leds = [1, 2, 3, 4, 5, 6].map(red => (
+      {
+        index: 0,
+        red: red*40,
+        green: 20,
+        blue: 30,
       }
-    }
+    ));
+    const timer = setTimeout(_ => {
+      set_leds(new_leds);
+    }, 1000);
+    return _ => clearTimeout(timer);
   }, []);
 
   return (

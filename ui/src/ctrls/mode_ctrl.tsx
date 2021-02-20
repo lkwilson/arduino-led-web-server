@@ -1,38 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import '../utils/utils.css';
 import './mode_ctrl.css'
 import { unwrap, unwrap_num } from '../utils/utils';
 import { post_mode } from '../utils/api_calls';
+import { ModeContext } from '../contexts/mode_context';
 
 function ModeCtrl() {
-  const [ mode, set_mode ] = useState("");
+  const [ name, set_name ] = useState("");
   const [ random_type, set_random_type ] = useState("");
   const [ random_delay_duration, set_random_delay_duration ] = useState("");
   const [ random_fade_duration, set_random_fade_duration ] = useState("");
 
-  useEffect(() => {
-    // TODO: Fetch mode
-    let loader = null;
-    loader = setTimeout(_ => {
-      loader = null;
-    }, 1000);
+  const mode_context = useContext(ModeContext);
 
-    return _ => {
-      if (loader != null) {
-        clearTimeout(loader);
+  useEffect(_ => {
+    if (mode_context != null) {
+      if (name !== mode_context.name) {
+        set_name(mode_context.name);
       }
-    };
-  }, []);
+      if (mode_context.name === "IDLE") {
+        // no idle state
+      } else if (mode_context.name === "RANDOM") {
+        if (random_type !== mode_context.type) {
+          set_random_type(mode_context.type)
+        }
+        if (random_delay_duration !== mode_context.delay_duration) {
+          set_random_delay_duration(mode_context.delay_duration);
+        }
+        if (random_fade_duration !== mode_context.fade_duration) {
+          if (mode_context.fade_duration === 0) {
+            set_random_fade_duration("");
+          } else {
+            set_random_fade_duration(mode_context.fade_duration);
+          }
+        }
+      }
+    }
+  }, [mode_context]);
 
   function update_mode_random_handler() {
-    console.log("Setting Mode:");
-    console.log({ mode, random_type, random_delay_duration, random_fade_duration });
-    if (mode === "IDLE") {
-      post_mode(mode, {})
+    console.log("Setting name:");
+    console.log({ name, random_type, random_delay_duration, random_fade_duration });
+    if (name === "IDLE") {
+      post_mode(name, {})
           .then(resp => JSON.parse(resp.data))
           .then(resp => console.log({ resp }))
           .catch(error => console.log({ error }));
-    } else if (mode === "RANDOM") {
+    } else if (name === "RANDOM") {
       if (random_type === "") {
         console.log("No random type selected");
         return;
@@ -46,7 +60,7 @@ function ModeCtrl() {
       if (random_fade_duration === "") {
         config['fade_duration'] = random_fade_duration;
       }
-      post_mode(mode, config)
+      post_mode(name, config)
           .then(resp => JSON.parse(resp.data))
           .then(resp => console.log({ resp }))
           .catch(error => console.log({ error }));
@@ -60,23 +74,23 @@ function ModeCtrl() {
       <h1 className="section-title">Modes</h1>
       <div className="container-row mode-form">
         <label htmlFor="idle_mode" className="mode-card">
-          <input type="radio" name="mode" id="idle_mode" value="IDLE" onChange={unwrap(set_mode)} checked={mode=="IDLE"}/>
+          <input type="radio" name="name" id="idle_mode" value="IDLE" onChange={unwrap(set_name)} checked={name==="IDLE"}/>
           <div>
             <h1>Idle</h1>
           </div>
         </label>
         <label htmlFor="random_mode" className="mode-card">
-          <input type="radio" name="mode" id="random_mode" value="RANDOM" onChange={unwrap(set_mode)} checked={mode=="RANDOM"}/>
+          <input type="radio" name="name" id="random_mode" value="RANDOM" onChange={unwrap(set_name)} checked={name==="RANDOM"}/>
           <div className="container-column form-align">
             <h1>Random</h1>
             <div className="container-column">
               <p>Type</p>
               <label htmlFor="random_type_uniform">
-                <input type="radio" name="random_type" id="random_type_uniform" value="UNIFORM" onChange={unwrap(set_random_type)} checked={random_type=="UNIFORM"}/>
+                <input type="radio" name="random_type" id="random_type_uniform" value="UNIFORM" onChange={unwrap(set_random_type)} checked={random_type==="UNIFORM"}/>
                 Uniform
               </label>
               <label htmlFor="random_type_individual">
-                <input type="radio" name="random_type" id="random_type_individual" value="INDIVIDUAL" onChange={unwrap(set_random_type)} checked={random_type=="INDIVIDUAL"}/>
+                <input type="radio" name="random_type" id="random_type_individual" value="INDIVIDUAL" onChange={unwrap(set_random_type)} checked={random_type==="INDIVIDUAL"}/>
                 Individual
               </label>
             </div>

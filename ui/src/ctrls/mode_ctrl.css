@@ -1,12 +1,11 @@
 .mode-form {
-  margin: 1rem;
   justify-content: space-evenly;
+  margin-bottom: 1rem;
 }
 
 .mode-card {
   border-radius: 5px;
   box-shadow: 0 3px 10px grey;
-  margin: .5rem;
   padding: .5rem;
 }
 

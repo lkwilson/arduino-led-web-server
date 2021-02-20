@@ -1,5 +1,43 @@
 import axios from 'axios';
 
+// types
+interface RandomModeConfig {
+  type: "INDIVIDUAL"|"UNIFORM";
+  delay_duration?: number;
+  fade_duration?: number;
+}
+
+interface IdleConfig {
+
+}
+
+type ModeConfig = RandomModeConfig | IdleConfig;
+
+interface LedDataEntry {
+  index: number;
+  red?: number;
+  green?: number;
+  blue?: number;
+  delay_duration?: number;
+  fade_duration?: number;
+}
+
+interface LedsData {
+  red: number;
+  green: number;
+  blue: number;
+  delay_duration?: number;
+  fade_duration?: number;
+}
+
+export {
+  RandomModeConfig,
+  IdleConfig,
+  ModeConfig,
+  LedDataEntry,
+  LedsData,
+};
+
 // helpers
 
 function jsonify_response(response) {
