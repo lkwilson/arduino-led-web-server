@@ -1,16 +1,15 @@
-import React from 'react';
+import React, {  } from 'react';
 
 import { ModeCtrl } from './ctrls/mode_ctrl';
-import { LedCtrl } from './ctrls/led_ctrl';
-import { AllLeds } from './ctrls/all_led_ctrl';
+import { LedCtrl } from './ctrls/leds_ctrl';
+import { LedsContextProvider } from './contexts/leds_context';
 
 function App() {
   return (
-    <>
+    <LedsContextProvider>
       <ModeCtrl />
       <LedCtrl />
-      <AllLeds />
-    </>
+    </LedsContextProvider>
   );
 }
 

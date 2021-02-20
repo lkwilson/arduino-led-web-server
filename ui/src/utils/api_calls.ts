@@ -1,48 +1,27 @@
 import axios from 'axios';
 
-interface RandomModeConfig {
-  type: "IDLE"|"UNIFORM";
-  delay_duration?: number;
-  fade_duration?: number;
+// helpers
+
+function jsonify_response(response) {
+  return JSON.parse(response.data);
 }
 
-interface IdleConfig {
-
-}
-
-type ModeConfig = RandomModeConfig | IdleConfig;
-
-interface LedDataEntry {
-  index: number;
-  red?: number;
-  green?: number;
-  blue?: number;
-  delay_duration?: number;
-  fade_duration?: number;
-}
-
-interface LedsData {
-  red: number;
-  green: number;
-  blue: number;
-  delay_duration?: number;
-  fade_duration?: number;
-}
+// api
 
 function get_led(index?: number) {
   if (index !== undefined) {
-    return axios.get(`api/led?index=${index}`);
+    return axios.get(`api/led?index=${index}`).then(jsonify_response);
   } else {
-    return axios.get("api/led");
+    return axios.get("api/led").then(jsonify_response);
   }
 }
 
 function get_mode() {
-  return axios.get("api/mode");
+  return axios.get("api/mode").then(jsonify_response);
 }
 
 function get_brightness() {
-  return axios.get("api/brightness");
+  return axios.get("api/brightness").then(jsonify_response);
 }
 
 function post_mode(name: string, config: ModeConfig) {
@@ -62,7 +41,6 @@ function post_brightness(brightness: number) {
 }
 
 export {
-  ModeConfig,
   get_led,
   get_mode,
   get_brightness,
