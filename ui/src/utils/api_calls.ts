@@ -46,6 +46,20 @@ function jsonify_response(response) {
 
 // api
 
+function is_connected() {
+  return get_alive()
+    .then(response_data => {
+      return response_data.trim() === "yes";
+    })
+    .catch(_ => {
+      return false;
+    });
+}
+
+function get_alive() {
+  return axios.get('api/alive').then(response => response.data);
+}
+
 function get_led(index?: number) {
   if (index !== undefined) {
     return axios.get(`api/led?index=${index}`).then(jsonify_response);
@@ -79,6 +93,8 @@ function post_brightness(brightness: number) {
 }
 
 export {
+  is_connected,
+  get_alive,
   get_led,
   get_mode,
   get_brightness,

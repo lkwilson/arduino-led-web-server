@@ -1,5 +1,6 @@
 import React from 'react';
 import { createContext, useState, useEffect } from 'react';
+import { get_led } from '../utils/api_calls';
 
 const LedsContext = createContext(null);
 
@@ -7,24 +8,28 @@ function LedsContextProvider(props) {
   const { children } = props;
   const [leds, set_leds] = useState([]);
 
+  function refresh_leds() {
+    get_led()
+        .then(data => {
+          set_leds(data);
+        })
+        .catch(error => {
+          console.error(error);
+        });
+  }
+
   // load state
   useEffect(_ => {
-    const new_leds = [1, 2, 3, 4, 5, 6].map(red => (
-      {
-        index: 0,
-        red: red*40,
-        green: 20,
-        blue: 30,
-      }
-    ));
-    const timer = setTimeout(_ => {
-      set_leds(new_leds);
-    }, 1000);
-    return _ => clearTimeout(timer);
+    refresh_leds();
   }, []);
 
+  const leds_state = {
+    leds,
+    refresh_leds,
+  };
+
   return (
-    <LedsContext.Provider value={leds}>
+    <LedsContext.Provider value={leds_state}>
       {children}
     </LedsContext.Provider>
   );

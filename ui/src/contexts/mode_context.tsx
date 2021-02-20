@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { ModeConfig } from '../utils/api_calls';
+import { get_mode } from '../utils/api_calls';
 
 const ModeContext = createContext(null);
 
@@ -8,23 +8,27 @@ function ModeContextProvider(props) {
 
   const [mode, set_mode] = useState(null);
 
+  function refresh_mode() {
+    get_mode()
+        .then(data => {
+          set_mode(data);
+        })
+        .catch(error => {
+          console.error(error);
+        })
+  }
+
   useEffect(_ => {
-    const new_mode: ModeConfig = {
-      name: "RANDOM",
-      type: "INDIVIDUAL",
-      delay_duration: 100,
-      fade_duration: 500,
-    };
-
-    const timer = setTimeout(_ => {
-      set_mode(new_mode);
-    }, 1000);
-
-    return _ => clearTimeout(timer);
+    refresh_mode();
   }, [])
 
+  const mode_state = {
+    mode,
+    refresh_mode,
+  }
+
   return (
-    <ModeContext.Provider value={mode}>
+    <ModeContext.Provider value={mode_state}>
       {children}
     </ModeContext.Provider>
   );

@@ -14,12 +14,19 @@ function LedCtrl() {
   const [delay_duration, set_delay_duration] = useState("");
   const [fade_duration, set_fade_duration] = useState("");
 
-  const brightness_context = useContext(BrightnessContext);
+  const { brightness: brightness_context, refresh_brightness } = useContext(BrightnessContext);
   useEffect(_ => {
     if (brightness_context != null && brightness != brightness_context) {
       set_brightness(brightness_context);
     }
   }, [brightness_context]);
+
+  useEffect(_ => {
+    const timer = setInterval(_ => {
+      refresh_brightness();
+    }, 1000);
+    return _ => clearInterval(timer);
+  }, []);
 
   const int_color = {
     red: Math.round(color.red),

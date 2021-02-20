@@ -5,7 +5,14 @@ import { rgb_to_hex } from '../utils/utils';
 
 function AllLeds(props) {
   const { set_color } = props;
-  const leds = useContext(LedsContext);
+  const { leds, refresh_leds } = useContext(LedsContext);
+
+  useEffect(_ => {
+    const timer = setInterval(_ => {
+      refresh_leds();
+    }, 1000);
+    return _ => clearInterval(timer);
+  }, [])
 
   function handle_led_selected(event, index) {
     event.preventDefault();

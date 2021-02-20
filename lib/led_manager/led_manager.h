@@ -25,6 +25,9 @@ struct LedManager {
       Serial.println("Adding handles for LedManager");
 
       // GET REQUESTS
+      server.on("/api/alive", HTTP_GET, [this](AsyncWebServerRequest* request) {
+        request->send(200, "text/plain", "yes");
+      });
       server.on("/api/led", HTTP_GET, [this](AsyncWebServerRequest* request) {
         if (request->hasParam("index")) {
           const auto index = request->getParam("index")->value().toInt();

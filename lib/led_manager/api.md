@@ -37,6 +37,15 @@ Note
 
 ## GET
 
+### `GET /alive`
+
+Returns:
+```
+yes
+```
+
+This is how the client can know if the server is alive or a light server
+
 ### `GET /led`
 
 Returns:

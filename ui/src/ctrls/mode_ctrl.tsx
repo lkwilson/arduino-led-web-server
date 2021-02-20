@@ -11,32 +11,39 @@ function ModeCtrl() {
   const [ random_delay_duration, set_random_delay_duration ] = useState("");
   const [ random_fade_duration, set_random_fade_duration ] = useState("");
 
-  const mode_context = useContext(ModeContext);
+  const { mode, refresh_mode } = useContext(ModeContext);
 
   useEffect(_ => {
-    if (mode_context != null) {
-      if (name !== mode_context.name) {
-        set_name(mode_context.name);
+    if (mode != null) {
+      if (name !== mode.name) {
+        set_name(mode.name);
       }
-      if (mode_context.name === "IDLE") {
+      if (mode.name === "IDLE") {
         // no idle state
-      } else if (mode_context.name === "RANDOM") {
-        if (random_type !== mode_context.type) {
-          set_random_type(mode_context.type)
+      } else if (mode.name === "RANDOM") {
+        if (random_type !== mode.type) {
+          set_random_type(mode.type)
         }
-        if (random_delay_duration !== mode_context.delay_duration) {
-          set_random_delay_duration(mode_context.delay_duration);
+        if (random_delay_duration !== mode.delay_duration) {
+          set_random_delay_duration(mode.delay_duration);
         }
-        if (random_fade_duration !== mode_context.fade_duration) {
-          if (mode_context.fade_duration === 0) {
+        if (random_fade_duration !== mode.fade_duration) {
+          if (mode.fade_duration === 0) {
             set_random_fade_duration("");
           } else {
-            set_random_fade_duration(mode_context.fade_duration);
+            set_random_fade_duration(mode.fade_duration);
           }
         }
       }
     }
-  }, [mode_context]);
+  }, [mode]);
+
+  useEffect(_ => {
+    const timer = setInterval(_ => {
+      refresh_mode();
+    }, 1000);
+    return _ => clearInterval(timer);
+  }, [])
 
   function update_mode_random_handler() {
     console.log("Setting name:");
