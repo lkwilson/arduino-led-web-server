@@ -15,7 +15,11 @@ void WiFiManager::setup() const {
 
 void WiFiManager::wait_for_connection() const {
   while (true) {
+    #ifdef ESP32
+    const auto results = WiFi.waitForConnectResult();
+    #else
     const auto results = WiFi.waitForConnectResult(10000UL);
+    #endif
     switch (results) {
       case WL_CONNECTED: {
         // assigned when connected to a WiFi network;
@@ -65,10 +69,12 @@ void WiFiManager::wait_for_connection() const {
         break;
       }
 
+      #ifndef ESP32
       case -1: { // Timeout
         Serial.println("(TIMEOUT) Connecting to WiFi timed out.");
         break;
       }
+      #endif
 
       default:
       {
