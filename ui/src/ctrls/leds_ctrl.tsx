@@ -34,10 +34,10 @@ function LedCtrl() {
       blue: Math.round(new_color.blue),
     };
     if (delay_duration !== "") {
-      data['delay_duration'] = Number(delay_duration);
+      data['delay_duration'] = delay_duration;
     }
     if (fade_duration !== "") {
-      data['fade_duration'] = Number(fade_duration);
+      data['fade_duration'] = fade_duration
     }
     post_leds({
       ...data,
@@ -54,9 +54,15 @@ function LedCtrl() {
     green: Math.round(color.green),
     blue: Math.round(color.blue),
   };
-  const set_red = red => pick_color({ ...int_color, red });
-  const set_green = green => pick_color({ ...int_color, green });
-  const set_blue = blue => pick_color({ ...int_color, blue });
+  function set_red(red) {
+    pick_color({ ...int_color , red });
+  }
+  function set_green(green) {
+    pick_color({ ...int_color , green });
+  }
+  function set_blue(blue) {
+    pick_color({ ...int_color , blue });
+  }
 
   function set_delay(value) {
     if (value == null || value === "") {
@@ -66,8 +72,7 @@ function LedCtrl() {
     }
   }
 
-  function set_fade(event) {
-    const value = event.target.value;
+  function set_fade(value) {
     if (value == null || value === "") {
       set_fade_duration("");
     } else {

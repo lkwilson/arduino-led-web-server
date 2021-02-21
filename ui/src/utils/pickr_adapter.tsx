@@ -48,6 +48,7 @@ function ColorPickrWrapper(props) {
     pickr.on('save', color => {
       if (color != null) {
         const [ red, green, blue, _ ] = color.toRGBA();
+        // TODO: This never color pickr needs the new set_color callback
         set_color({ red, green, blue });
       }
     });

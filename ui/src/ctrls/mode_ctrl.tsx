@@ -39,12 +39,8 @@ function ModeCtrl() {
   }, [mode]);
 
   function update_mode_random_handler() {
-    console.log("Setting name:");
-    console.log({ name, random_type, random_delay_duration, random_fade_duration });
     if (name === "IDLE") {
       post_mode(name, {})
-          .then(resp => console.log({ resp }))
-          .catch(error => console.log({ error }));
     } else if (name === "RANDOM") {
       if (random_type === "") {
         console.log("No random type selected");
@@ -64,8 +60,6 @@ function ModeCtrl() {
         config['fade_duration'] = Number(random_fade_duration);
       }
       post_mode(name, config)
-          .then(resp => console.log({ resp }))
-          .catch(error => console.log({ error }));
     } else {
       console.log("No mode selected");
     }
