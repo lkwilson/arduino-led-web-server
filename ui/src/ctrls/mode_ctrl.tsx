@@ -38,6 +38,22 @@ function ModeCtrl() {
     }
   }, [mode]);
 
+  function set_random_delay(value) {
+    if (value == null || value === "") {
+      set_random_delay_duration("");
+    } else {
+      set_random_delay_duration(Math.max(0, Math.round(Number(value))));
+    }
+  }
+
+  function set_random_fade(value) {
+    if (value == null || value === "") {
+      set_random_fade_duration("");
+    } else {
+      set_random_fade_duration(Math.max(0, Math.round(Number(value))));
+    }
+  }
+
   function update_mode_random_handler() {
     if (name === "IDLE") {
       post_mode(name, {})
@@ -92,12 +108,12 @@ function ModeCtrl() {
             </div>
             <label htmlFor="random_delay_duration">
               Delay:
-              <input type="number" placeholder="0" name="random_delay_duration" id="random_delay_duration" value={random_delay_duration} onChange={unwrap_num(set_random_delay_duration)}/>
+              <input type="number" placeholder="0" name="random_delay_duration" id="random_delay_duration" value={random_delay_duration} onChange={unwrap(set_random_delay)}/>
               ms
             </label>
             <label htmlFor="random_fade_duration">
               Fade:
-              <input type="number" placeholder="0" name="random_fade_duration" id="random_fade_duration" value={random_fade_duration} onChange={unwrap_num(set_random_fade_duration)}/>
+              <input type="number" placeholder="0" name="random_fade_duration" id="random_fade_duration" value={random_fade_duration} onChange={unwrap(set_random_fade)}/>
               ms
             </label>
           </div>

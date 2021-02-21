@@ -13,7 +13,7 @@ function LedCtrl() {
   const [color, set_color] = useState({ red: 0, green: 0, blue: 0 });
   const [brightness, set_brightness] = useState(255);
   const [delay_duration, set_delay_duration] = useState("");
-  const [fade_duration, set_fade_duration] = useState("");
+  const [fade_duration, set_fade_duration] = useState(100);
 
   const { brightness: brightness_context, refresh_brightness } = useContext(BrightnessContext);
   useEffect(_ => {
@@ -24,7 +24,14 @@ function LedCtrl() {
 
   function push_brightness(new_brightness) {
     set_brightness(new_brightness);
-    post_brightness({ brightness: new_brightness });
+    const data = { brightness: new_brightness };
+    if (delay_duration !== "") {
+      data['delay_duration'] = delay_duration;
+    }
+    if (fade_duration !== "") {
+      data['fade_duration'] = fade_duration;
+    }
+    post_brightness(data);
   }
 
   function push_color_state(new_color) {
@@ -33,11 +40,12 @@ function LedCtrl() {
       green: Math.round(new_color.green),
       blue: Math.round(new_color.blue),
     };
+    console.log({delay_duration, fade_duration});
     if (delay_duration !== "") {
       data['delay_duration'] = delay_duration;
     }
     if (fade_duration !== "") {
-      data['fade_duration'] = fade_duration
+      data['fade_duration'] = fade_duration;
     }
     post_leds({
       ...data,

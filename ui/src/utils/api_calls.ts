@@ -49,7 +49,7 @@ const queue_full_error = "Queue is full. Skipping.";
 const send_queue = (_ => {
   let queues = {};
   let lengths = {};
-  const max_length = 10;
+  const max_length = 2;
 
   function add(id, cb) {
     if (!(id in queues)) {

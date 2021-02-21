@@ -6,6 +6,8 @@ import '@simonwep/pickr/dist/themes/monolith.min.css';
 function ColorPickrWrapper(props) {
   const { color, set_color } = props;
   const pickr_ref = useRef(null);
+  const set_color_ref = useRef(set_color);
+  set_color_ref.current = set_color;
 
   // Mount color picker
   useEffect(_ => {
@@ -48,8 +50,7 @@ function ColorPickrWrapper(props) {
     pickr.on('save', color => {
       if (color != null) {
         const [ red, green, blue, _ ] = color.toRGBA();
-        // TODO: This never color pickr needs the new set_color callback
-        set_color({ red, green, blue });
+        set_color_ref.current({ red, green, blue });
       }
     });
 
