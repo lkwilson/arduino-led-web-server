@@ -1,11 +1,10 @@
-import React, { createContext, useEffect, useState } from 'react';
+import { h, createContext } from 'preact';
+import { useEffect, useState } from 'preact/hooks';
 import { get_brightness } from '../utils/api_calls';
 
 const BrightnessContext = createContext(null);
 
-function BrightnessContextProvider(props) {
-  const { children } = props;
-
+function BrightnessContextProvider({ children }) {
   const [brightness, set_brightness] = useState(null);
 
   function refresh_brightness() {
@@ -18,7 +17,7 @@ function BrightnessContextProvider(props) {
         });
   }
 
-  useEffect(_ => {
+  useEffect(() => {
     refresh_brightness();
   }, []);
 
@@ -29,7 +28,7 @@ function BrightnessContextProvider(props) {
 
   return (
     <BrightnessContext.Provider value={brightness_state}>
-      {children}
+      {children} 
     </BrightnessContext.Provider>
   );
 }

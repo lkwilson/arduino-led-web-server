@@ -1,5 +1,4 @@
-import React, {  } from 'react';
-
+import { h } from 'preact';
 import { ModeCtrl } from './ctrls/mode_ctrl';
 import { LedCtrl } from './ctrls/leds_ctrl';
 import { StateContextProvider } from './contexts/state_context';

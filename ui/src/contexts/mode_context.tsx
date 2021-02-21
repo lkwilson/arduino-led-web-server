@@ -1,11 +1,10 @@
-import React, { createContext, useState, useEffect } from 'react';
+import { h, createContext } from 'preact';
+import { useState, useEffect } from 'preact/hooks';
 import { get_mode } from '../utils/api_calls';
 
 const ModeContext = createContext(null);
 
-function ModeContextProvider(props) {
-  const { children } = props;
-
+function ModeContextProvider({ children }) {
   const [mode, set_mode] = useState(null);
 
   function refresh_mode() {
@@ -18,7 +17,7 @@ function ModeContextProvider(props) {
         })
   }
 
-  useEffect(_ => {
+  useEffect(() => {
     refresh_mode();
   }, [])
 

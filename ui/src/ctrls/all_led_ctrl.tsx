@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { h } from 'preact';
+import { useContext } from 'preact/hooks';
 import { LedsContext } from '../contexts/leds_context';
 
 import { rgb_to_hex } from '../utils/utils';

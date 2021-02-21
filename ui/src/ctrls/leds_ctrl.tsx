@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { h, Fragment } from 'preact';
+import { useState, useEffect, useContext } from 'preact/hooks';
 
 import './leds_ctrl.css';
 import '../utils/utils.css';
@@ -12,11 +13,11 @@ import { post_brightness, post_leds } from '../utils/api_calls';
 function LedCtrl() {
   const [color, set_color] = useState({ red: 0, green: 0, blue: 0 });
   const [brightness, set_brightness] = useState(255);
-  const [delay_duration, set_delay_duration] = useState("");
-  const [fade_duration, set_fade_duration] = useState("");
+  const [delay_duration, set_delay_duration] = useState<""|number>("");
+  const [fade_duration, set_fade_duration] = useState<""|number>("");
 
   const { brightness: brightness_context, refresh_brightness } = useContext(BrightnessContext);
-  useEffect(_ => {
+  useEffect(() => {
     if (brightness_context !== null && brightness !== brightness_context) {
       set_brightness(brightness_context);
     }

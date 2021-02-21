@@ -1,11 +1,10 @@
-import React from 'react';
-import { createContext, useState, useEffect } from 'react';
+import { h, createContext } from 'preact';
+import { useState, useEffect } from 'preact/hooks';
 import { get_led } from '../utils/api_calls';
 
 const LedsContext = createContext(null);
 
-function LedsContextProvider(props) {
-  const { children } = props;
+function LedsContextProvider({ children }) {
   const [leds, set_leds] = useState([]);
 
   function refresh_leds() {
@@ -21,7 +20,7 @@ function LedsContextProvider(props) {
   }
 
   // load state
-  useEffect(_ => {
+  useEffect(() => {
     refresh_leds();
   }, []);
 
@@ -32,7 +31,7 @@ function LedsContextProvider(props) {
 
   return (
     <LedsContext.Provider value={leds_state}>
-      {children}
+      {children} 
     </LedsContext.Provider>
   );
 }

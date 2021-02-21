@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import { h } from 'preact';
+import { useEffect, useRef } from 'preact/hooks';
 
 import Pickr from '@simonwep/pickr';
 import '@simonwep/pickr/dist/themes/monolith.min.css';
@@ -8,7 +9,7 @@ function ColorPickrWrapper(props) {
   const pickr_ref = useRef(null);
 
   // Mount color picker
-  useEffect(_ => {
+  useEffect(() => {
     const { red, green, blue } = color;
     const default_color = `rgb(${[red, green, blue].join(', ')})`;
 
@@ -54,10 +55,10 @@ function ColorPickrWrapper(props) {
     });
 
     // Remove pickr from dom
-    return _ => pickr.destroyAndRemove();
+    return () => pickr.destroyAndRemove();
   }, []);
 
-  useEffect(_ => {
+  useEffect(() => {
     const pickr = pickr_ref.current;
     if (pickr == null) {
       return;

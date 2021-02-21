@@ -1,10 +1,9 @@
-import React from 'react';
+import { h } from 'preact';
 import { ModeContextProvider } from './mode_context';
 import { LedsContextProvider } from './leds_context';
 import { BrightnessContextProvider } from './brightness_context';
 
-function StateContextProvider(props) {
-  const { children } = props;
+function StateContextProvider({ children }) {
   return (
     <BrightnessContextProvider>
       <ModeContextProvider>

@@ -1,4 +1,5 @@
-import React, { useContext, useState, useEffect } from 'react';
+import { h } from 'preact';
+import { useContext, useState, useEffect } from 'preact/hooks';
 import '../utils/utils.css';
 import './mode_ctrl.css'
 import { unwrap, unwrap_num } from '../utils/utils';
@@ -13,7 +14,7 @@ function ModeCtrl() {
 
   const { mode, refresh_mode } = useContext(ModeContext);
 
-  useEffect(_ => {
+  useEffect(() => {
     if (mode != null) {
       if (name !== mode.name) {
         set_name(mode.name);
