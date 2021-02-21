@@ -47,7 +47,7 @@ bool string_to_enum(const String& str, RandomTypeEnum& value) {
 }
 
 uint8_t rand_color() {
-  return random(sizeof(uint8_t));
+  return rand() % 256;
 }
 
 struct FollowState {
