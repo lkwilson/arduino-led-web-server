@@ -11,8 +11,9 @@ function LedsContextProvider(props) {
   function refresh_leds() {
     get_led()
         .then(response => {
-          console.log(response.data);
-          set_leds(response.data);
+          // TODO: This needs to be fixed server side. and probably also made
+          // resilient on client side.
+          //set_leds(response.data);
         })
         .catch(error => {
           console.error(error);

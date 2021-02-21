@@ -1,15 +1,14 @@
 import axios from 'axios';
 
 // types
+
 interface RandomModeConfig {
   type: "INDIVIDUAL"|"UNIFORM";
   delay_duration?: number;
   fade_duration?: number;
 }
 
-interface IdleConfig {
-
-}
+interface IdleConfig {}
 
 type ModeConfig = RandomModeConfig | IdleConfig;
 
@@ -26,6 +25,12 @@ interface LedsData {
   red: number;
   green: number;
   blue: number;
+  delay_duration?: number;
+  fade_duration?: number;
+}
+
+interface BrightnessData {
+  brightness: number;
   delay_duration?: number;
   fade_duration?: number;
 }
@@ -54,7 +59,7 @@ function assert_response_is(response, type: "string"|"object") {
   if (typeof(response.data) === type) {
     return response;
   }
-  throw `Response should be of type ${type} but isn't: ${response.data}`;
+  throw `Response should be of type ${type} but isn't: ${response.data.toString().substr(0, 20)}`;
 }
 
 function assert_response_is_object(response) {
@@ -85,7 +90,10 @@ function get_brightness() {
   return axios.get("api/brightness").then(assert_response_is_object);
 }
 
-function post_mode(name: string, config: ModeConfig) {
+function post_mode(name: string, config?: ModeConfig) {
+  if (config === undefined) {
+    config = {};
+  }
   return axios.post("api/mode", { name, ...config });
 }
 
@@ -97,8 +105,8 @@ function post_leds(leds_data: LedsData) {
   return axios.post("api/led", leds_data);
 }
 
-function post_brightness(brightness: number) {
-  return axios.post("api/brightness", { brightness })
+function post_brightness(data: BrightnessData) {
+  return axios.post("api/brightness", data)
 }
 
 export {

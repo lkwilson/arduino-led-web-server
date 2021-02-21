@@ -38,19 +38,11 @@ function ModeCtrl() {
     }
   }, [mode]);
 
-  useEffect(_ => {
-    const timer = setInterval(_ => {
-      refresh_mode();
-    }, 1000);
-    return _ => clearInterval(timer);
-  }, [])
-
   function update_mode_random_handler() {
     console.log("Setting name:");
     console.log({ name, random_type, random_delay_duration, random_fade_duration });
     if (name === "IDLE") {
       post_mode(name, {})
-          .then(resp => JSON.parse(resp.data))
           .then(resp => console.log({ resp }))
           .catch(error => console.log({ error }));
     } else if (name === "RANDOM") {
@@ -62,13 +54,16 @@ function ModeCtrl() {
         type: random_type,
       };
       if (random_delay_duration === "") {
-        config['delay_duration'] = random_delay_duration;
+        config['delay_duration'] = 0;
+      } else {
+        config['delay_duration'] = Number(random_delay_duration);
       }
       if (random_fade_duration === "") {
-        config['fade_duration'] = random_fade_duration;
+        config['fade_duration'] = 0;
+      } else {
+        config['delay_duration'] = Number(random_fade_duration);
       }
       post_mode(name, config)
-          .then(resp => JSON.parse(resp.data))
           .then(resp => console.log({ resp }))
           .catch(error => console.log({ error }));
     } else {

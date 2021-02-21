@@ -7,6 +7,7 @@ import { AllLeds } from './all_led_ctrl';
 import { unwrap, unwrap_num, rgb_to_hex, hex_to_rgb } from '../utils/utils';
 import { ColorPickrWrapper } from '../utils/pickr_adapter';
 import { BrightnessContext } from '../contexts/brightness_context';
+import { post_brightness, post_leds } from '../utils/api_calls';
 
 function LedCtrl() {
   const [color, set_color] = useState({ red: 0, green: 0, blue: 0 });
@@ -16,26 +17,45 @@ function LedCtrl() {
 
   const { brightness: brightness_context, refresh_brightness } = useContext(BrightnessContext);
   useEffect(_ => {
-    if (brightness_context != null && brightness != brightness_context) {
+    if (brightness_context !== null && brightness !== brightness_context) {
       set_brightness(brightness_context);
     }
   }, [brightness_context]);
 
   useEffect(_ => {
-    const timer = setInterval(_ => {
-      refresh_brightness();
-    }, 1000);
-    return _ => clearInterval(timer);
-  }, []);
+    console.log({ brightness_context, brightness });
+    if (brightness_context !== null && brightness !== brightness_context) {
+      // TODO: I need a brightness card that also has fade and duration
+      post_brightness({ brightness: brightness_context });
+    }
+  }, [brightness]);
+
+  function push_color_state(new_color) {
+    const data = { ...new_color };
+    if (delay_duration !== "") {
+      data['delay_duration'] = Number(delay_duration);
+    }
+    if (fade_duration !== "") {
+      data['fade_duration'] = Number(fade_duration);
+    }
+    post_leds({
+      ...data,
+    })
+  }
+
+  function pick_color(new_color) {
+    set_color(new_color);
+    push_color_state(new_color);
+  }
 
   const int_color = {
     red: Math.round(color.red),
     green: Math.round(color.green),
     blue: Math.round(color.blue),
   };
-  const set_red = red => set_color({ ...int_color, red });
-  const set_green = green => set_color({ ...int_color, green });
-  const set_blue = blue => set_color({ ...int_color, blue });
+  const set_red = red => pick_color({ ...int_color, red });
+  const set_green = green => pick_color({ ...int_color, green });
+  const set_blue = blue => pick_color({ ...int_color, blue });
 
   function set_delay(value) {
     if (value == null || value === "") {
@@ -44,6 +64,7 @@ function LedCtrl() {
       set_delay_duration(Math.max(0, Math.round(Number(value))));
     }
   }
+
   function set_fade(event) {
     const value = event.target.value;
     if (value == null || value === "") {
@@ -60,7 +81,7 @@ function LedCtrl() {
       return;
     }
 
-    set_color(rgb_color);
+    pick_color(rgb_color);
   }
 
   const { red, green, blue } = int_color;
@@ -72,7 +93,7 @@ function LedCtrl() {
         <div className="container-row input-row">
           <div>
             {hex_value.toUpperCase()}
-            <ColorPickrWrapper color={color} set_color={set_color} />
+            <ColorPickrWrapper color={color} set_color={pick_color} />
           </div>
           <div className="container-column led-form flex-grow-1">
             <div className="container-row input-row">

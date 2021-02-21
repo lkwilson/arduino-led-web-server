@@ -25,7 +25,7 @@ function BrightnessContextProvider(props) {
   const brightness_state = {
     brightness,
     refresh_brightness,
-  }
+  };
 
   return (
     <BrightnessContext.Provider value={brightness_state}>
