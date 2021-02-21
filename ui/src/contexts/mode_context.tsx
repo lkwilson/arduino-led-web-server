@@ -10,8 +10,8 @@ function ModeContextProvider(props) {
 
   function refresh_mode() {
     get_mode()
-        .then(data => {
-          set_mode(data);
+        .then(response => {
+          set_mode(response.data);
         })
         .catch(error => {
           console.error(error);

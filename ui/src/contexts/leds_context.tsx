@@ -10,8 +10,9 @@ function LedsContextProvider(props) {
 
   function refresh_leds() {
     get_led()
-        .then(data => {
-          set_leds(data);
+        .then(response => {
+          console.log(response.data);
+          set_leds(response.data);
         })
         .catch(error => {
           console.error(error);
