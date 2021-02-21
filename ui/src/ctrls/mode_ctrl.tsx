@@ -61,7 +61,7 @@ function ModeCtrl() {
       if (random_fade_duration === "") {
         config['fade_duration'] = 0;
       } else {
-        config['delay_duration'] = Number(random_fade_duration);
+        config['fade_duration'] = Number(random_fade_duration);
       }
       post_mode(name, config)
           .then(resp => console.log({ resp }))

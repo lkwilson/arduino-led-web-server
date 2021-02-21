@@ -8,6 +8,8 @@ namespace lw {
 template<typename msg_t>
 void error(AsyncWebServerRequest* request, msg_t&& msg) {
   // TODO: Support error codes
+  Serial.print("Error: ");
+  Serial.println(msg);
   request->send(400, "text/plain", std::forward<msg_t>(msg));
 }
 

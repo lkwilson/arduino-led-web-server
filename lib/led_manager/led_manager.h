@@ -73,6 +73,7 @@ struct LedManager {
 
   public: // web api
     void api_get_led(AsyncWebServerRequest* request, size_t index) const {
+      Serial.printf("Handling GET /led?index=%d\n", index);
       auto response = lw::make_ptr<AsyncJsonResponse>();
       auto&& response_json = response->getRoot().as<JsonObject>();
 
@@ -91,6 +92,7 @@ struct LedManager {
     }
  
     void api_get_led(AsyncWebServerRequest* request) const {
+      Serial.println("Handling GET /led");
       auto response = lw::make_ptr<AsyncJsonResponse>(true /*is array*/);
       auto&& root = response->getRoot();
 
@@ -108,6 +110,7 @@ struct LedManager {
     }
 
     void api_get_mode(AsyncWebServerRequest* request) const {
+      Serial.println("Handling GET /mode");
       auto response = lw::make_ptr<AsyncJsonResponse>();
       auto&& root = response->getRoot().as<JsonObject>();
 
@@ -135,6 +138,7 @@ struct LedManager {
     }
 
     void api_get_brightness(AsyncWebServerRequest* request) const {
+      Serial.println("Handling GET /brightness");
       auto response = lw::make_ptr<AsyncJsonResponse>();
       auto&& root = response->getRoot().as<JsonObject>();
 
@@ -145,6 +149,7 @@ struct LedManager {
     }
 
     void api_post_led(AsyncWebServerRequest* request, JsonVariant& json) {
+      Serial.println("Handling POST /led");
       if (not json.is<JsonArray>()) {
         lw::error(request, "Expected an array");
         return;
@@ -176,6 +181,7 @@ struct LedManager {
         if (not lw::load_value_if_any(request, color.green, led_data, "green")) { return; }
         if (not lw::load_value_if_any(request, color.blue, led_data, "blue")) { return; }
 
+        Serial.printf("Setting led #%d to RGB %d %d %d with delay %lu and fade %lu\n", index, color.red, color.green, color.blue, delay_duration, fade_duration);
         m_state_manager.set(
             index,
             current_time,
@@ -188,6 +194,7 @@ struct LedManager {
     }
 
     void api_post_leds(AsyncWebServerRequest* request, JsonVariant& json) {
+      Serial.println("Handling POST /leds");
       if (not json.is<JsonObject>()) {
         lw::error(request, "Expected an object");
         return;
@@ -204,6 +211,7 @@ struct LedManager {
       if (not lw::load_value(request, color.green, data, "green")) { return; }
       if (not lw::load_value(request, color.blue, data, "blue")) { return; }
 
+      Serial.printf("Setting all leds to RGB %d %d %d (#%X%X%X) with delay %lu and fade %lu\n", color.red, color.green, color.blue, color.red, color.green, color.blue, delay_duration, fade_duration);
       m_state_manager.set(
           millis(), // current time
           delay_duration,
@@ -213,6 +221,7 @@ struct LedManager {
     }
 
     void api_post_mode(AsyncWebServerRequest* request, JsonVariant& json) {
+      Serial.println("Handling POST /mode");
       if (not json.is<JsonObject>()) {
         lw::error(request, "Expected an object");
         return;
@@ -231,11 +240,8 @@ struct LedManager {
       }
     }
 
-    void set_brightness(const millis_t current_time, const millis_t delay_duration, const millis_t fade_duration, const uint8_t brightness) {
-      m_state_manager.set_brightness(current_time, delay_duration, fade_duration, brightness);
-    }
-
     void api_post_brightness(AsyncWebServerRequest* request, JsonVariant& json) {
+      Serial.println("Handling POST /brightness");
       if (not json.is<JsonObject>()) {
         lw::error(request, "Expected an object");
         return;
@@ -256,8 +262,8 @@ struct LedManager {
     }
 
   private: // helpers
-
     void set_mode_idle(AsyncWebServerRequest* request, const JsonObject&) {
+      Serial.println("Setting mode to IDLE");
       m_state_manager.set_idle_state();
       request->send(200);
     }
@@ -277,11 +283,17 @@ struct LedManager {
         return;
       }
 
+      Serial.printf("Setting mode to RANDOM with type %s delay %lu and fade %lu\n", type.c_str(), delay_duration, fade_duration);
       m_state_manager.set_random_state(
           type_enum,
           delay_duration,
           fade_duration);
       request->send(200);
+    }
+
+    void set_brightness(const millis_t current_time, const millis_t delay_duration, const millis_t fade_duration, const uint8_t brightness) {
+      Serial.printf("Setting brightness to %d with delay %lu and fade %lu\n", brightness, delay_duration, fade_duration);
+      m_state_manager.set_brightness(current_time, delay_duration, fade_duration, brightness);
     }
 
   private: // members
