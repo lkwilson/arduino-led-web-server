@@ -22,16 +22,17 @@ function LedCtrl() {
     }
   }, [brightness_context]);
 
-  useEffect(_ => {
-    console.log({ brightness_context, brightness });
-    if (brightness_context !== null && brightness !== brightness_context) {
-      // TODO: I need a brightness card that also has fade and duration
-      post_brightness({ brightness: brightness_context });
-    }
-  }, [brightness]);
+  function push_brightness(new_brightness) {
+    set_brightness(new_brightness);
+    post_brightness({ brightness: new_brightness });
+  }
 
   function push_color_state(new_color) {
-    const data = { ...new_color };
+    const data = {
+      red: Math.round(new_color.red),
+      green: Math.round(new_color.green),
+      blue: Math.round(new_color.blue),
+    };
     if (delay_duration !== "") {
       data['delay_duration'] = Number(delay_duration);
     }
@@ -116,7 +117,7 @@ function LedCtrl() {
             <label htmlFor="brightness">
               Brightness: {brightness} ({Math.round(brightness / 255 * 100)}%)
               <br />
-              <input type="range" min="0" max="255" name="brightness" id="brightness" value={brightness} onChange={unwrap_num(set_brightness)} />
+              <input type="range" min="0" max="255" name="brightness" id="brightness" value={brightness} onChange={unwrap_num(push_brightness)} />
             </label>
             <div className="container-row input-row">
               <label htmlFor="led_delay_duration">
