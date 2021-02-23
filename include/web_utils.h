@@ -2,6 +2,7 @@
 
 #include <ESPAsyncWebServer.h>
 #include <AsyncJson.h>
+#include <ArduinoJson.h>
 
 namespace lw {
 
