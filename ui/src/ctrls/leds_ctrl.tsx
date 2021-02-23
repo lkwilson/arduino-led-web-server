@@ -40,7 +40,6 @@ function LedCtrl() {
       green: Math.round(new_color.green),
       blue: Math.round(new_color.blue),
     };
-    console.log({delay_duration, fade_duration});
     if (delay_duration !== "") {
       data['delay_duration'] = delay_duration;
     }
