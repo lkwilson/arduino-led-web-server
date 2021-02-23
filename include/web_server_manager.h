@@ -20,10 +20,11 @@ struct WebServerManager {
       if (!LittleFS.begin()) {
         Serial.println("Unable to mount LittleFS directory");
       }
-      m_server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
-      m_server.onNotFound([this](AsyncWebServerRequest *request) { this->on_not_found(request); });
 
       add_handlers(std::forward<handlers_t>(handlers)...);
+
+      m_server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+      m_server.onNotFound([this](AsyncWebServerRequest *request) { this->on_not_found(request); });
 
       m_server.begin();
     }
