@@ -6,6 +6,14 @@ upload.
 If you want to modify the UI, you need to install use NodeJS. Look at NodeJS
 Setup
 
+# ESP32 notes
+
+Uploading LittleFS is very confusing. You need this binary:
+
+https://github.com/earlephilhower/mklittlefs/releases
+
+Put it in `bin/`
+
 # NodeJS-less setup
 
 If you don't want to install `npm` or `node`, then you can use the prebuilt
