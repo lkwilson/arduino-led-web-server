@@ -76,8 +76,8 @@ const send_queue = (_ => {
 function is_connected() {
   return send_queue.add("is_connected", _ => {
     return get_alive()
-      .then(response_data => {
-        return (response_data as any as string).trim() === "yes";
+      .then(response => {
+        return response.data.trim() === "yes";
       })
       .catch(_ => {
         return false;
