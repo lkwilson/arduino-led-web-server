@@ -1,5 +1,10 @@
 #include <ESPAsyncWebServer.h>
+#ifdef ESP32
+#include <LITTLEFS.h>
+#define LittleFS LITTLEFS
+#else
 #include <LittleFS.h>
+#endif
 
 struct WebServerManager {
   public: // ctors
