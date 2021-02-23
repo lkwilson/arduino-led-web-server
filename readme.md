@@ -88,6 +88,13 @@ You can create a production build of the UI by running the following:
 npm run web-build
 ```
 
+If you upload the backend to an arduino and have it running, you can use the
+following to forward the API to the arduino.
+
+```
+API_URL=http://192.168.1.26/ npm start
+```
+
 ## Back End Development
 
 Use the following to verify that your backend compiles.
