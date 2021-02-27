@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 
 import Pickr from '@simonwep/pickr';
 import '@simonwep/pickr/dist/themes/monolith.min.css';
-import { build_single_microtask_queue } from './task_queues';
+import { build_single_microtask_queue, ignore_task_results, log_task_results } from './task_queues';
 
 /*
 The change event is triggered when manually set or when actually picked by
@@ -17,8 +17,8 @@ function color_to_pickr_string(color) {
   return `rgb(${red}, ${green}, ${blue})`;
 }
 
-function report_change(changed, changed_color, updated, updated_color) {
-  //console.log(`${changed} changed (${color_to_pickr_string(changed_color)}). Updating ${updated} (${color_to_pickr_string(updated_color)})`)
+function report_change_id(changed, changed_color, updated, updated_color) {
+  return `${changed} changed (${color_to_pickr_string(changed_color)}). Updating ${updated} (${color_to_pickr_string(updated_color)})`;
 }
 
 function initialize_pickr(default_color) {
@@ -65,10 +65,11 @@ function ColorPickrWrapper({ color, set_color }) {
   const set_color_ref = useRef();
   set_color_ref.current = new_color => {
     if (!are_colors_equal(color, new_color)) {
-      color_updates_ref.current(() => {
-        report_change("pickr", new_color, "state", color);
+      const res = color_updates_ref.current(() => {
         set_color(new_color);
-      })
+      });
+      //log_task_results(report_change_id("pickr", new_color, "state", color), res);
+      ignore_task_results(res);
     }
   };
 
@@ -102,7 +103,7 @@ function ColorPickrWrapper({ color, set_color }) {
     const [ red, green, blue ] = pickr.getColor().toRGBA();
     const old_color = { red, green, blue };
     if (!are_colors_equal(old_color, color)) {
-      report_change("state", color, "pickr", old_color);
+      //console.log(report_change_id("state", color, "pickr", old_color))
       pickr.setColor(color_to_pickr_string(color));
     }
   }, [color]);
