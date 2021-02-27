@@ -162,7 +162,6 @@ function LedCtrl() {
           </div>
         </div>
       </div>
-      <AllLeds set_color={set_color} />
     </>
   );
 }

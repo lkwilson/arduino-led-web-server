@@ -43,6 +43,7 @@
 
 .mode-list {
   display: grid;
+  /* TODO: figure out how to do this properly */
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   column-gap: 3rem;
   row-gap: 1rem;

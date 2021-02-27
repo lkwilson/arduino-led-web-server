@@ -4,8 +4,8 @@ import { OnlineContext } from '../contexts/online_context';
 
 import { rgb_to_hex } from '../utils/utils';
 
-function AllLeds(props) {
-  const { set_color } = props;
+function AllLedsCtrl(props) {
+  //const { set_color } = props;
   const { leds, refresh_leds } = useContext(LedsContext);
 
   const { online } = useContext(OnlineContext)
@@ -13,7 +13,7 @@ function AllLeds(props) {
   function handle_led_selected(event, index) {
     event.preventDefault();
     const { red, green, blue } = leds[index];
-    set_color({ red, green, blue });
+    //set_color({ red, green, blue });
   }
 
   let display_leds = online ? "Loading..." : "Offline";
@@ -47,5 +47,5 @@ function AllLeds(props) {
 }
 
 export {
-  AllLeds,
+  AllLedsCtrl,
 };
