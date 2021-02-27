@@ -83,20 +83,18 @@ function ModeCtrl() {
   }
 
   return (
-    <div className="mode-grid">
+    <>
       <h1 className="section-title">Modes</h1>
-      <div className="mode-row mode-form">
+      <div className="mode-row">
         <label htmlFor="idle_mode" className="mode-card">
           <input type="radio" name="name" id="idle_mode" value="IDLE" onChange={unwrap(set_name)} checked={name==="IDLE"}/>
-          <div>
-            <h1>Idle</h1>
-          </div>
+          <h2>Idle</h2>
         </label>
         <label htmlFor="random_mode" className="mode-card">
           <input type="radio" name="name" id="random_mode" value="RANDOM" onChange={unwrap(set_name)} checked={name==="RANDOM"}/>
           <div className="container-column form-align">
-            <h1>Random</h1>
-            <div className="container-column">
+            <h2>Random</h2>
+            <div className="mode-grid">
               <p>Type</p>
               <label htmlFor="random_type_uniform">
                 <input type="radio" name="random_type" id="random_type_uniform" value="UNIFORM" onChange={unwrap(set_random_type)} checked={random_type==="UNIFORM"}/>
@@ -106,20 +104,20 @@ function ModeCtrl() {
                 <input type="radio" name="random_type" id="random_type_individual" value="INDIVIDUAL" onChange={unwrap(set_random_type)} checked={random_type==="INDIVIDUAL"}/>
                 Individual
               </label>
+              <label htmlFor="random_delay_duration">
+                Delay (ms):
+                <input type="number" placeholder="0" name="random_delay_duration" id="random_delay_duration" value={random_delay_duration} onChange={set_random_delay}/>
+              </label>
+              <label htmlFor="random_fade_duration">
+                Fade (ms):
+                <input type="number" placeholder="0" name="random_fade_duration" id="random_fade_duration" value={random_fade_duration} onChange={set_random_fade}/>
+              </label>
             </div>
-            <label htmlFor="random_delay_duration">
-              Delay (ms):
-              <input type="number" placeholder="0" name="random_delay_duration" id="random_delay_duration" value={random_delay_duration} onChange={set_random_delay}/>
-            </label>
-            <label htmlFor="random_fade_duration">
-              Fade (ms):
-              <input type="number" placeholder="0" name="random_fade_duration" id="random_fade_duration" value={random_fade_duration} onChange={set_random_fade}/>
-            </label>
           </div>
         </label>
       </div>
       <div className="update-button" onClick={update_mode_random_handler}>Update</div>
-    </div>
+    </>
   );
 }
 

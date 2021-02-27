@@ -2,10 +2,6 @@
   display: grid;
   gap: 1rem;
 }
-.mode-form {
-  justify-content: space-evenly;
-  width: 100%;
-}
 
 .mode-card {
   border-radius: 5px;
@@ -15,6 +11,10 @@
   background-color: var(--secondary-color);
   color: var(--secondary-text);
   transform: scale(.98);
+}
+
+.mode-card:hover {
+  transform: scale(1.01);
 }
 
 .mode-row {
@@ -32,14 +32,9 @@
   border-radius: 10px;
   max-width: 400px;
   align-self: center;
-  margin: auto;
+  margin: 1rem auto;
 }
-
-input[type="number"],
-input[type="text"] {
-}
-
 
 .update-button:hover {
-  transform: scale(.98);
+  transform: scale(1.01);
 }

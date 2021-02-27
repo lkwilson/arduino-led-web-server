@@ -7,7 +7,49 @@ input[type="text"] {
   padding: 2px;
   outline: none;
   margin: .5rem;
-  width: 7em;
+  max-width: 7em;
+  min-width: 4em;
   color: inherit;
   background-color: inherit;
+}
+
+.container-row {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.container-column {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+}
+
+.section-title {
+  border-bottom: 1px var(--secondary-color) solid;
+  margin-bottom: 1rem;
+}
+
+.form-align {
+  align-items: flex-start;
+}
+
+.flex-grow-1 {
+  flex-grow: 1;
+}
+
+.justify-space-evenly {
+  justify-content: space-evenly;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.align-items-center {
+  align-items: space-evenly;
 }
