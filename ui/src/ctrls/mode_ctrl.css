@@ -1,16 +1,45 @@
+.mode-grid {
+  display: grid;
+  gap: 1rem;
+}
 .mode-form {
   justify-content: space-evenly;
-  margin-bottom: 1rem;
+  width: 100%;
 }
 
 .mode-card {
   border-radius: 5px;
-  box-shadow: 0 3px 10px grey;
-  padding: .5rem;
+  box-shadow: 0 3px 10px var(--primary-text);
+  margin: 0 1rem;
+  padding: 1rem;
+  background-color: var(--secondary-color);
+  color: var(--secondary-text);
+  transform: scale(.98);
+}
+
+.mode-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
 }
 
 .update-button {
+  margin-top: 1rem;
   padding: 1rem;
-  margin: 1rem;
   width: 100%;
+  background-color: var(--secondary-color);
+  color: var(--secondary-text);
+  border-radius: 10px;
+  max-width: 400px;
+  align-self: center;
+  margin: auto;
+}
+
+input[type="number"],
+input[type="text"] {
+}
+
+
+.update-button:hover {
+  transform: scale(.98);
 }

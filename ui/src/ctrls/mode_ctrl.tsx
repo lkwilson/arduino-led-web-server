@@ -5,6 +5,15 @@ import { unwrap, unwrap_num } from '../utils/utils';
 import { post_mode } from '../utils/api_calls';
 import { ModeContext } from '../contexts/mode_context';
 
+function parse_number_input(event) {
+  const value = event.target.value;
+  if (value == null || value === "") {
+    return "";
+  } else {
+    return Math.max(0, Math.round(Number(value)));
+  }
+}
+
 function ModeCtrl() {
   const [ name, set_name ] = useState("");
   const [ random_type, set_random_type ] = useState("");
@@ -38,20 +47,12 @@ function ModeCtrl() {
     }
   }, [mode]);
 
-  function set_random_delay(value) {
-    if (value == null || value === "") {
-      set_random_delay_duration("");
-    } else {
-      set_random_delay_duration(Math.max(0, Math.round(Number(value))));
-    }
+  function set_random_delay(event) {
+    set_random_delay_duration(parse_number_input(event));
   }
 
-  function set_random_fade(value) {
-    if (value == null || value === "") {
-      set_random_fade_duration("");
-    } else {
-      set_random_fade_duration(Math.max(0, Math.round(Number(value))));
-    }
+  function set_random_fade(event) {
+    set_random_fade_duration(parse_number_input(event));
   }
 
   function update_mode_random_handler() {
@@ -82,9 +83,9 @@ function ModeCtrl() {
   }
 
   return (
-    <div className="container-column">
+    <div className="mode-grid">
       <h1 className="section-title">Modes</h1>
-      <div className="container-row mode-form">
+      <div className="mode-row mode-form">
         <label htmlFor="idle_mode" className="mode-card">
           <input type="radio" name="name" id="idle_mode" value="IDLE" onChange={unwrap(set_name)} checked={name==="IDLE"}/>
           <div>
@@ -107,21 +108,17 @@ function ModeCtrl() {
               </label>
             </div>
             <label htmlFor="random_delay_duration">
-              Delay:
-              <input type="number" placeholder="0" name="random_delay_duration" id="random_delay_duration" value={random_delay_duration} onChange={unwrap(set_random_delay)}/>
-              ms
+              Delay (ms):
+              <input type="number" placeholder="0" name="random_delay_duration" id="random_delay_duration" value={random_delay_duration} onChange={set_random_delay}/>
             </label>
             <label htmlFor="random_fade_duration">
-              Fade:
-              <input type="number" placeholder="0" name="random_fade_duration" id="random_fade_duration" value={random_fade_duration} onChange={unwrap(set_random_fade)}/>
-              ms
+              Fade (ms):
+              <input type="number" placeholder="0" name="random_fade_duration" id="random_fade_duration" value={random_fade_duration} onChange={set_random_fade}/>
             </label>
           </div>
         </label>
-        <label htmlFor="update_mode_random">
-          <input type="button" value="Update" className="update-button" onClick={update_mode_random_handler} />
-        </label>
       </div>
+      <div className="update-button" onClick={update_mode_random_handler}>Update</div>
     </div>
   );
 }

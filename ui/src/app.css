@@ -1,0 +1,13 @@
+input[type="number"],
+input[type="text"] {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid;
+  font-size: 16px;
+  padding: 2px;
+  outline: none;
+  margin: .5rem;
+  width: 7em;
+  color: inherit;
+  background-color: inherit;
+}

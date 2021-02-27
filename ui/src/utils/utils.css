@@ -11,8 +11,7 @@
 }
 
 .section-title {
-  border-bottom: 1px black solid;
-  margin-bottom: 1rem;
+  border-bottom: 1px var(--secondary-color) solid;
 }
 
 .form-align {
@@ -29,4 +28,12 @@
 
 .justify-center {
   justify-content: center;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.align-items-center {
+  align-items: space-evenly;
 }

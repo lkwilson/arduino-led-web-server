@@ -6,6 +6,18 @@
 
 :root {
   font-family: Helvetica, sans-serif;
+
+  --primary-color: whitesmoke;
+  --primary-text: black;
+  --secondary-color: #22223b;
+  --secondary-text: white;
+
+  background-color: var(--primary-color);
+  color: var(--primary-text);
+
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #root {
