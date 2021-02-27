@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 
 import Pickr from '@simonwep/pickr';
 import '@simonwep/pickr/dist/themes/monolith.min.css';
+import { build_single_microtask_queue } from './task_queues';
 
 /*
 The change event is triggered when manually set or when actually picked by
@@ -60,18 +61,14 @@ function are_colors_equal(lhs, rhs) {
 }
 
 function ColorPickrWrapper({ color, set_color }) {
-  const color_updates_ref = useRef(0);
+  const color_updates_ref = useRef(build_single_microtask_queue());
   const set_color_ref = useRef();
   set_color_ref.current = new_color => {
     if (!are_colors_equal(color, new_color)) {
-      color_updates_ref.current++;
-      Promise.resolve().then(() => {
-        if (color_updates_ref.current === 1) {
-          report_change("pickr", new_color, "state", color);
-          set_color(new_color);
-        }
-        color_updates_ref.current--;
-      });
+      color_updates_ref.current(() => {
+        report_change("pickr", new_color, "state", color);
+        set_color(new_color);
+      })
     }
   };
 
