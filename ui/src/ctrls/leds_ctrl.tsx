@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 
 import './leds_ctrl.css';
 import '../utils/utils.css';
@@ -8,6 +8,8 @@ import { unwrap, unwrap_num, rgb_to_hex, hex_to_rgb } from '../utils/utils';
 import { ColorPickrWrapper } from '../utils/pickr_adapter';
 import { BrightnessContext } from '../contexts/brightness_context';
 import { post_brightness, post_leds } from '../utils/api_calls';
+import { OnlineContext } from '../contexts/online_context';
+import { build_single_promise_queue, ignore_task_results, log_task_results } from '../utils/task_queues';
 
 function LedCtrl() {
   const [color, set_color] = useState({ red: 0, green: 0, blue: 0 });
@@ -15,7 +17,7 @@ function LedCtrl() {
   const [delay_duration, set_delay_duration] = useState("");
   const [fade_duration, set_fade_duration] = useState(100);
 
-  const { brightness: brightness_context, refresh_brightness } = useContext(BrightnessContext);
+  const { brightness: brightness_context } = useContext(BrightnessContext);
   useEffect(_ => {
     if (brightness_context !== null && brightness !== brightness_context) {
       set_brightness(brightness_context);
@@ -34,21 +36,30 @@ function LedCtrl() {
     post_brightness(data);
   }
 
+
+  const post_leds_queue = useRef(build_single_promise_queue());
+  const { online } = useContext(OnlineContext);
   function push_color_state(new_color) {
+    if (!online) {
+      return;
+    }
     const data = {
       red: Math.round(new_color.red),
       green: Math.round(new_color.green),
       blue: Math.round(new_color.blue),
     };
-    if (delay_duration !== "") {
-      data['delay_duration'] = delay_duration;
-    }
-    if (fade_duration !== "") {
-      data['fade_duration'] = fade_duration;
-    }
-    post_leds({
-      ...data,
-    })
+    const res = post_leds_queue.current(() => {
+      if (delay_duration !== "") {
+        data['delay_duration'] = delay_duration;
+      }
+      if (fade_duration !== "") {
+        data['fade_duration'] = fade_duration;
+      }
+      return post_leds({
+        ...data,
+      });
+    });
+    ignore_task_results(res);
   }
 
   function pick_color(new_color) {
