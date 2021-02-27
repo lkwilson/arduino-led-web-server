@@ -85,34 +85,31 @@ function ModeCtrl() {
   return (
     <>
       <h1 className="section-title">Modes</h1>
-      <div className="mode-row">
+      <div className="mode-list">
         <label htmlFor="idle_mode" className="mode-card">
           <input type="radio" name="name" id="idle_mode" value="IDLE" onChange={unwrap(set_name)} checked={name==="IDLE"}/>
-          <h2>Idle</h2>
+          <div className="mode-options">
+            <h2>Idle</h2>
+          </div>
         </label>
         <label htmlFor="random_mode" className="mode-card">
           <input type="radio" name="name" id="random_mode" value="RANDOM" onChange={unwrap(set_name)} checked={name==="RANDOM"}/>
-          <div className="container-column form-align">
-            <h2>Random</h2>
-            <div className="mode-grid">
-              <p>Type</p>
-              <label htmlFor="random_type_uniform">
-                <input type="radio" name="random_type" id="random_type_uniform" value="UNIFORM" onChange={unwrap(set_random_type)} checked={random_type==="UNIFORM"}/>
-                Uniform
-              </label>
-              <label htmlFor="random_type_individual">
-                <input type="radio" name="random_type" id="random_type_individual" value="INDIVIDUAL" onChange={unwrap(set_random_type)} checked={random_type==="INDIVIDUAL"}/>
-                Individual
-              </label>
-              <label htmlFor="random_delay_duration">
-                Delay (ms):
-                <input type="number" placeholder="0" name="random_delay_duration" id="random_delay_duration" value={random_delay_duration} onChange={set_random_delay}/>
-              </label>
-              <label htmlFor="random_fade_duration">
-                Fade (ms):
-                <input type="number" placeholder="0" name="random_fade_duration" id="random_fade_duration" value={random_fade_duration} onChange={set_random_fade}/>
-              </label>
-            </div>
+          <div className="mode-options">
+            <h2 className="mode-title">Random</h2>
+            <label htmlFor="random_type_uniform" className="mode-radio-option">
+              Uniform
+              <br/>
+              <input type="radio" name="random_type" id="random_type_uniform" value="UNIFORM" onChange={unwrap(set_random_type)} checked={random_type==="UNIFORM"}/>
+            </label>
+            <label htmlFor="random_type_individual" className="mode-radio-option">
+              Individual
+              <br/>
+              <input type="radio" name="random_type" id="random_type_individual" value="INDIVIDUAL" onChange={unwrap(set_random_type)} checked={random_type==="INDIVIDUAL"}/>
+            </label>
+            <label htmlFor="random_delay_duration">Delay (ms):</label>
+            <input type="number" placeholder="0" name="random_delay_duration" id="random_delay_duration" value={random_delay_duration} onChange={set_random_delay}/>
+            <label htmlFor="random_fade_duration">Fade (ms):</label>
+            <input type="number" placeholder="0" name="random_fade_duration" id="random_fade_duration" value={random_fade_duration} onChange={set_random_fade}/>
           </div>
         </label>
       </div>

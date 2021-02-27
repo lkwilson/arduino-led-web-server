@@ -3,12 +3,12 @@ input[type="text"] {
   background: transparent;
   border: none;
   border-bottom: 1px solid;
+  border-radius: 0;
   font-size: 16px;
-  padding: 2px;
+  padding: .2rem;
   outline: none;
-  margin: .5rem;
   max-width: 7em;
-  min-width: 4em;
+  min-width: 5em;
   color: inherit;
   background-color: inherit;
 }

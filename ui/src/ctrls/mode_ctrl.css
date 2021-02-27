@@ -1,32 +1,58 @@
 .mode-grid {
   display: grid;
-  gap: 1rem;
 }
 
 .mode-card {
   border-radius: 5px;
   box-shadow: 0 3px 10px var(--primary-text);
-  margin: 0 1rem;
   padding: 1rem;
   background-color: var(--secondary-color);
   color: var(--secondary-text);
-  transform: scale(.98);
+}
+
+.mode-options {
+  display: grid;
+  grid-template-areas:
+    "title title"
+    "uniform individual"
+    "delay delay"
+    "fade fade"
+  ;
+  justify-content: center;
+  align-items: center;
+  gap: .2rem;
+}
+
+.mode-options > * {
+  white-space: nowrap;
+}
+
+.mode-options > h2 {
+  grid-area: title;
 }
 
 .mode-card:hover {
   transform: scale(1.01);
 }
 
-.mode-row {
+.mode-radio-option {
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 0 1rem;
+}
+
+.mode-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  column-gap: 3rem;
+  row-gap: 1rem;
+  max-width: 50rem;
+  margin: 0 auto;
 }
 
 .update-button {
   margin-top: 1rem;
   padding: 1rem;
-  width: 100%;
   background-color: var(--secondary-color);
   color: var(--secondary-text);
   border-radius: 10px;
