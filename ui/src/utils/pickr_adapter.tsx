@@ -17,7 +17,7 @@ function color_to_pickr_string(color) {
 }
 
 function report_change(changed, changed_color, updated, updated_color) {
-  console.log(`${changed} changed (${color_to_pickr_string(changed_color)}). Updating ${updated} (${color_to_pickr_string(updated_color)})`)
+  //console.log(`${changed} changed (${color_to_pickr_string(changed_color)}). Updating ${updated} (${color_to_pickr_string(updated_color)})`)
 }
 
 function initialize_pickr(default_color) {
@@ -60,11 +60,18 @@ function are_colors_equal(lhs, rhs) {
 }
 
 function ColorPickrWrapper({ color, set_color }) {
+  const color_updates_ref = useRef(0);
   const set_color_ref = useRef();
   set_color_ref.current = new_color => {
     if (!are_colors_equal(color, new_color)) {
-      report_change("pickr", new_color, "state", color);
-      set_color(new_color);
+      color_updates_ref.current++;
+      Promise.resolve().then(() => {
+        if (color_updates_ref.current === 1) {
+          report_change("pickr", new_color, "state", color);
+          set_color(new_color);
+        }
+        color_updates_ref.current--;
+      });
     }
   };
 
