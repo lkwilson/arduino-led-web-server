@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { build_single_task_queue } from './task_queues';
 
 // types
@@ -44,6 +43,23 @@ export {
   LedsData,
 };
 
+// utils
+
+function get_data(url) {
+  return fetch(url).then(response => response.json());
+}
+
+function post_data(url, data) {
+  return fetch(url, {
+    method: "POST",
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+}
+
 // api
 
 function is_connected() {
@@ -72,42 +88,42 @@ function assert_response_is_string(response) {
 }
 
 function get_alive() {
-  return axios.get('api/alive').then(assert_response_is_string);
+  return get_data('api/alive').then(assert_response_is_string);
 }
 
 function get_led(index?: number) {
   if (index !== undefined) {
-    return axios.get(`api/led?index=${index}`).then(assert_response_is_object);
+    return get_data(`api/led?index=${index}`).then(assert_response_is_object);
   } else {
-    return axios.get("api/led").then(assert_response_is_object);
+    return get_data("api/led").then(assert_response_is_object);
   }
 }
 
 function get_mode() {
-  return axios.get("api/mode").then(assert_response_is_object);
+  return get_data("api/mode").then(assert_response_is_object);
 }
 
 function get_brightness() {
-  return axios.get("api/brightness").then(assert_response_is_object);
+  return get_data("api/brightness").then(assert_response_is_object);
 }
 
 function post_mode(name: string, config?: ModeConfig) {
   if (config === undefined) {
     config = {};
   }
-  return axios.post("api/mode", { name, ...config });
+  return post_data("api/mode", { name, ...config });
 }
 
 function post_led(led_data: Array<LedDataEntry>) {
-  return axios.post("api/led", led_data);
+  return post_data("api/led", led_data);
 }
 
 function post_leds(leds_data: LedsData) {
-  return axios.post("api/leds", leds_data);
+  return post_data("api/leds", leds_data);
 }
 
 function post_brightness(data: BrightnessData) {
-  return axios.post("api/brightness", data)
+  return post_data("api/brightness", data)
 }
 
 export {
