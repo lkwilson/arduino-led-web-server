@@ -11,7 +11,7 @@ function BrightnessContextProvider(props) {
   function refresh_brightness() {
     get_brightness()
         .then(response => {
-          set_brightness(response.data.brightness);
+          set_brightness(response.brightness);
         })
         .catch(err => {
           console.error(err);

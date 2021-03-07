@@ -64,31 +64,24 @@ function post_data(url, data) {
 
 function is_connected() {
   return get_alive()
-    .then(response => {
-      return response.data.trim() === "yes";
+    .then((response) => {
+      return response.trim() === 'yes';
     })
-    .catch(_ => {
+    .catch((error) => {
+      console.error('Not connected:', error);
       return false;
     });
 }
 
-function assert_response_is(response, type: "string"|"object") {
-  if (typeof(response.data) === type) {
+function assert_response_is_object(response) {
+  if (typeof response === 'object') {
     return response;
   }
-  throw `Response should be of type ${type} but isn't: ${response.data.toString().substr(0, 20)}`;
-}
-
-function assert_response_is_object(response) {
-  return assert_response_is(response, "object");
-}
-
-function assert_response_is_string(response) {
-  return assert_response_is(response, "string");
+  throw `Response should be an object but isn't: ${String(response).substr(0, 20)}`;
 }
 
 function get_alive() {
-  return get_data('api/alive').then(assert_response_is_string);
+  return fetch('api/alive').then((response) => response.text());
 }
 
 function get_led(index?: number) {
