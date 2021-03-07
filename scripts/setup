@@ -1,0 +1,8 @@
+echo "WARNING: This will reinstall things which might break things. The platform IO file isn't setup to handle linux yet."
+echo "There is an exit 1 in the ./scripts/setup file. Comment that out if it's really what you want."
+echo "Note: To make it work, you probably have to cherry pick the linux_patch branch: git cherry-pick linux_patch"
+exit 1
+
+git pull
+npm install
+npm run build
