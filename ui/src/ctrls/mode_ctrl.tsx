@@ -1,5 +1,4 @@
 import React, { useContext, useState, useEffect } from 'react';
-import '../utils/utils.css';
 import './mode_ctrl.css'
 import { unwrap, unwrap_num } from '../utils/utils';
 import { post_mode } from '../utils/api_calls';

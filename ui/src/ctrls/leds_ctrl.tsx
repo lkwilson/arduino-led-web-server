@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 
 import './leds_ctrl.css';
-import '../utils/utils.css';
 
 import { AllLeds } from './all_led_ctrl';
 import { unwrap, unwrap_num, rgb_to_hex, hex_to_rgb } from '../utils/utils';

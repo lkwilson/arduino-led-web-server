@@ -16,8 +16,8 @@ if (api_url != null && api_url !== "") {
 module.exports = {
   routes,
   mount: {
-    "ui/public/": '/',
-    "ui/src/": '/dist',
+    'ui/public/': '/',
+    'ui/src/': '/dist',
   },
   buildOptions: {
     out: 'data',

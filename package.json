@@ -13,7 +13,9 @@
     "build": "npm run web-build && npm run ar-build",
     "web-build": "snowpack build",
     "ar-build": "pio run",
+    "push-fs-esp32": "pio run -t uploadfs -e esp32dev",
     "upload-esp32": "pio run -t uploadfs -e esp32dev && pio run -t upload -e esp32dev",
+    "push-fs-esp8266": "pio run -t uploadfs -e esp8266",
     "upload-esp8266": "pio run -t uploadfs -e esp8266 && pio run -t upload -e esp8266",
     "monitor": "pio device monitor",
     "clean": "pio run -t clean && rm -rf data/",
@@ -31,7 +33,6 @@
   },
   "dependencies": {
     "@simonwep/pickr": "^1.8.0",
-    "axios": "^0.21.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "snowpack": "^3.0.13"

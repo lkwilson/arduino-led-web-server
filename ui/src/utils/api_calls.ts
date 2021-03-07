@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { build_single_task_queue } from './task_queues';
 
 // types
@@ -44,70 +43,80 @@ export {
   LedsData,
 };
 
+// utils
+
+function get_data(url) {
+  return fetch(url).then(response => response.json());
+}
+
+function post_data(url, data) {
+  return fetch(url, {
+    method: "POST",
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+}
+
 // api
 
 function is_connected() {
   return get_alive()
-    .then(response => {
-      return response.data.trim() === "yes";
+    .then((response) => {
+      return response.trim() === 'yes';
     })
-    .catch(_ => {
+    .catch((error) => {
+      console.error('Not connected:', error);
       return false;
     });
 }
 
-function assert_response_is(response, type: "string"|"object") {
-  if (typeof(response.data) === type) {
+function assert_response_is_object(response) {
+  if (typeof response === 'object') {
     return response;
   }
-  throw `Response should be of type ${type} but isn't: ${response.data.toString().substr(0, 20)}`;
-}
-
-function assert_response_is_object(response) {
-  return assert_response_is(response, "object");
-}
-
-function assert_response_is_string(response) {
-  return assert_response_is(response, "string");
+  throw `Response should be an object but isn't: ${String(response).substr(0, 20)}`;
 }
 
 function get_alive() {
-  return axios.get('api/alive').then(assert_response_is_string);
+  return fetch('api/alive').then((response) => response.text());
 }
 
 function get_led(index?: number) {
   if (index !== undefined) {
-    return axios.get(`api/led?index=${index}`).then(assert_response_is_object);
+    return get_data(`api/led?index=${index}`).then(assert_response_is_object);
   } else {
-    return axios.get("api/led").then(assert_response_is_object);
+    return get_data("api/led").then(assert_response_is_object);
   }
 }
 
 function get_mode() {
-  return axios.get("api/mode").then(assert_response_is_object);
+  return get_data("api/mode").then(assert_response_is_object);
 }
 
 function get_brightness() {
-  return axios.get("api/brightness").then(assert_response_is_object);
+  return get_data("api/brightness").then(assert_response_is_object);
 }
 
 function post_mode(name: string, config?: ModeConfig) {
   if (config === undefined) {
     config = {};
   }
-  return axios.post("api/mode", { name, ...config });
+  return post_data("api/mode", { name, ...config });
 }
 
 function post_led(led_data: Array<LedDataEntry>) {
-  return axios.post("api/led", led_data);
+  return post_data("api/led", led_data);
 }
 
 function post_leds(leds_data: LedsData) {
-  return axios.post("api/leds", leds_data);
+  return post_data("api/leds", leds_data);
 }
 
 function post_brightness(data: BrightnessData) {
-  return axios.post("api/brightness", data)
+  return post_data("api/brightness", data)
 }
 
 export {
