@@ -15,8 +15,8 @@
     "ar-build": "pio run",
     "push-fs-esp32": "pio run -t uploadfs -e esp32dev",
     "upload-esp32": "pio run -t uploadfs -e esp32dev && pio run -t upload -e esp32dev",
-    "push-fs-esp8266": "pio run -t uploadfs -e esp8266",
-    "upload-esp8266": "pio run -t uploadfs -e esp8266 && pio run -t upload -e esp8266",
+    "push-fs-esp8266": "pio run -t uploadfs -e nodemcuv2",
+    "upload-esp8266": "pio run -t uploadfs -e nodemcuv2 && pio run -t upload -e nodemcuv2",
     "monitor": "pio device monitor",
     "clean": "pio run -t clean && rm -rf data/",
     "test": "pio test"
