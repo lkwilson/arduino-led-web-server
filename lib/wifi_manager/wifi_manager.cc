@@ -12,7 +12,7 @@ void WiFiManager::setup() const {
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
 
-  if (not MDNS.begin("qrleds")) {
+  if (not MDNS.begin("myleds")) {
     Serial.println("MDNS failed to start. Waiting and trying again.");
     while (true) {
       delay(1000);

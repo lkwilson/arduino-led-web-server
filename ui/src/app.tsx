@@ -12,7 +12,7 @@ function App() {
     <StateContextProvider>
       <LedCtrl />
       <ModeCtrl />
-      <AllLedsCtrl />
+      {/*<AllLedsCtrl />*/}
     </StateContextProvider>
   );
 }
