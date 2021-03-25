@@ -11,6 +11,15 @@ void WiFiManager::setup() const {
   Serial.println(WiFi.SSID());
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
+
+  if (not MDNS.begin("qrleds")) {
+    Serial.println("MDNS failed to start. Waiting and trying again.");
+    while (true) {
+      delay(1000);
+    }
+  }
+
+  MDNS.addService("http", "tcp", 80);
 }
 
 void WiFiManager::wait_for_connection() const {
