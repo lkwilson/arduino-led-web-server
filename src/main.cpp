@@ -6,7 +6,7 @@ constexpr auto SERIAL_BAUD_RATE = 115200;
 #ifdef ESP32
 constexpr auto LED_DATA_PIN = 5;
 #else
-constexpr auto LED_DATA_PIN = 6;
+constexpr auto LED_DATA_PIN = 4;
 #endif
 constexpr auto LED_NUM_LIGHTS = 150;
 
@@ -22,6 +22,7 @@ void setup() {
 
   // Setup WiFi
   s_wifi_manager.setup();
+  // s_wifi_manager.setup("ssid", "password");
 
   // Setup Managers
   s_led_manager.setup();

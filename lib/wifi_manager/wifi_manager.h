@@ -13,6 +13,7 @@
 struct WiFiManager {
   public: // api
     void setup() const;
+    void setup(const char* const ssid, const char* const password) const;
 
   private: // helper methods
     void wait_for_connection() const;
