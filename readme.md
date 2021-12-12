@@ -1,3 +1,53 @@
+# Quick Start
+
+You should just have to install packages, build and upload. you don't need to
+upload the fs if you don't want to, the api will still work.
+
+Install packages with
+```
+pio lib install
+```
+
+Build with
+```
+pio run
+```
+
+Upload esp32
+```
+pio run -t upload -e esp32dev
+```
+
+Upload esp8266
+```
+pio run -t upload -e nodemcuv2
+```
+
+Upload esp32
+```
+pio run -t uploadfs -e esp32dev
+```
+
+Upload esp8266
+```
+pio run -t uploadfs -e nodemcuv2
+```
+
+Monitor with
+```
+pio device monitor
+```
+
+Clean with
+```
+pio run -t clean
+```
+
+Test with
+```
+pio test
+```
+
 # Quick Upload
 
 This project can be opened with PlatformIO. From there, you can build and
