@@ -14,6 +14,7 @@ struct LedManager {
     void setup() {
       Serial.printf("LED manager loading with %d leds and data pin %d\n", NUM_LEDS, DATA_PIN);
       FastLED.addLeds<NEOPIXEL, DATA_PIN>(m_leds, NUM_LEDS);
+      FastLED.setBrightness(100);
     }
 
     void loop() {
