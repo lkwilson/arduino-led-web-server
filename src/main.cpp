@@ -22,6 +22,7 @@ void setup() {
 
   // Setup WiFi
   s_wifi_manager.setup();
+  // s_wifi_manager.setup("ssid", "password");
 
   // Setup Managers
   s_led_manager.setup();

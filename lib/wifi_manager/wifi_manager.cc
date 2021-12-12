@@ -1,9 +1,9 @@
 #include "wifi_manager.h"
 
-void WiFiManager::setup() const {
+void WiFiManager::setup(const char* const ssid, const char* const password) const {
   Serial.println("Connecting to WiFi");
   configure();
-  const auto results = WiFi.begin();
+  const auto results = ssid == nullptr ? WiFi.begin() : WiFi.begin(ssid, password);
   if (results != WL_CONNECTED) {
     wait_for_connection();
   }
@@ -20,6 +20,10 @@ void WiFiManager::setup() const {
   }
 
   MDNS.addService("http", "tcp", 80);
+}
+
+void WiFiManager::setup() const {
+  setup(nullptr, nullptr);
 }
 
 void WiFiManager::wait_for_connection() const {
